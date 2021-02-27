@@ -14,91 +14,91 @@
                 </tr>
                 <tr>
                     <th>8</th>
-                    <td draggable="true" class="light">♜</td>
-                    <td draggable="true" class="dark">♞</td>
-                    <td draggable="true" class="light">♝</td>
-                    <td draggable="true" class="dark">♛</td>
-                    <td draggable="true" class="light">♚</td>
-                    <td draggable="true" class="dark">♝</td>
-                    <td draggable="true" class="light">♞</td>
-                    <td  draggable="true" class="dark">♜</td>
+                    <td id="a8" class="light"  @click ="getPosition($event)" >♜</td>
+                    <td id="b8"  class="dark"  @click ="getPosition($event)">♞</td>
+                    <td id="c8" class="light"  @click ="getPosition($event)">♝</td>
+                    <td  id="d8"  class="dark" @click ="getPosition($event)">♛</td>
+                    <td id="e8" class="light"  @click ="getPosition($event)">♚</td>
+                    <td  id="f8" class="dark"  @click ="getPosition($event)">♝</td>
+                    <td  id="g8" class="light" @click ="getPosition($event)">♞</td>
+                    <td id="h8"  class="dark"  @click ="getPosition($event)">♜</td>
                 </tr>
                 <tr>
                     <th>7</th>
-                    <td draggable="true" class="dark">♟</td>
-                    <td draggable="true" class="light">♟</td>
-                    <td draggable="true" class="dark">♟</td>
-                    <td draggable="true" class="light">♟</td>
-                    <td  draggable="true" class="dark">♟</td>
-                    <td draggable="true" class="light">♟</td>
-                    <td draggable="true" class="dark">♟</td>
-                    <td  draggable="true" class="light">♟</td>
+                    <td id="a7" class="dark" @click ="getPosition($event)">♟</td>
+                    <td id="b7" class="light" @click ="getPosition($event)">♟</td>
+                    <td id="c7" class="dark" @click ="getPosition($event)" >♟</td>
+                    <td id="d7" class="light" @click ="getPosition($event)"  >♟</td>
+                    <td id="e7"  class="dark" @click ="getPosition($event)">♟</td>
+                    <td id="f7" class="light" @click ="getPosition($event)">♟</td>
+                    <td id="g7" class="dark" @click ="getPosition($event)">♟</td>
+                    <td  id="h7" class="light" @click ="getPosition($event)">♟</td>
                 </tr>
                 <tr>
                     <th>6</th>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
+                     <td class="light" @click ="getPosition($event)" id="a6" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="b6" ></td>
+                    <td class="light" @click ="getPosition($event)" id="c6" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="d6" ></td>
+                    <td class="light" @click ="getPosition($event)" id="f6" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="e6" ></td>
+                    <td class="light" @click ="getPosition($event)" id="g6" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="h6" ></td>
                 </tr>
                 <tr>
                     <th>5</th>
-                    <td draggable="true" @drop="drop(event)" @dragover="allowDrop(event)" class="dark"></td>
-                    <td  draggable="true" @drop="drop(event)" @dragover="allowDrop(event)" class="light"></td>
-                    <td draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="dark"></td>
-                    <td  draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="light"></td>
-                    <td  draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="dark"></td>
-                    <td  draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="light"></td>
-                    <td  draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="dark"></td>
-                    <td  draggable="true"  @drop="drop(event)" @dragover="allowDrop(event)" class="light"></td>
+                     <td class="dark"      @click ="getPosition($event)" id="a5" ></td>
+                    <td class="light"     @click ="getPosition($event)" id="b5"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="c5"></td>
+                    <td class="light"     @click ="getPosition($event)" id="d5"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="f5"></td>
+                    <td class="light"     @click ="getPosition($event)" id="e5"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="f5"></td>
+                    <td class="light"     @click ="getPosition($event)" id="g5"></td>
                 </tr>
                 <tr>
                     <th>4</th>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
-                    <td class="light"></td>
-                    <td class="dark"></td>
+                    <td class="light" @click ="getPosition($event)" id="a4" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="b4" ></td>
+                    <td class="light" @click ="getPosition($event)" id="c4" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="d4" ></td>
+                    <td class="light" @click ="getPosition($event)" id="f4" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="e4" ></td>
+                    <td class="light" @click ="getPosition($event)" id="g4" ></td>
+                    <td class="dark"  @click ="getPosition($event)" id="h4" ></td>
                 </tr>
                 <tr>
                     <th>3</th>
-                    <td class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent ></td>
-                    <td class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
-                    <td class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent></td>
+                    <td class="dark"      @click ="getPosition($event)" id="a3" ></td>
+                    <td class="light"     @click ="getPosition($event)" id="b3"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="c3"></td>
+                    <td class="light"     @click ="getPosition($event)" id="d3"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="f3"></td>
+                    <td class="light"     @click ="getPosition($event)" id="e3"></td>
+                    <td class="dark"      @click ="getPosition($event)" id="f3"></td>
+                    <td class="light"     @click ="getPosition($event)" id="g3"></td>
                 </tr>
                 <tr>
                     <th>2</th>
-                    <td  class="light" v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"   >♙</div></td>
-                    <td  class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td   class="light" v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td   class="dark"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td   class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td   class="dark" v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td  class="light"  v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)"  >♙</div></td>
-                    <td   class="dark" v-on:drop ="drop($event)" @dragover.stop @dragenter.prevent><div :draggable="true" @drag="drag($event)" >♙</div></td>
+                    <td  class="light"  @click ="getPosition($event)" id="a2" >♙</td>
+                    <td  class="dark"   @click ="getPosition($event)" id="b2"  >♙</td>
+                    <td   class="light" @click ="getPosition($event)" id="c2" >♙</td>
+                    <td   class="dark"  @click ="getPosition($event)" id="d2" >♙</td>
+                    <td   class="light" @click ="getPosition($event)" id="e2" >♙</td>
+                    <td   class="dark"  @click ="getPosition($event)" id="f2" >♙</td>
+                    <td  class="light"  @click ="getPosition($event)" id="g2" >♙</td>
+                    <td   class="dark"  @click ="getPosition($event)" id="h2">♙</td>
                 </tr>
                 <tr>
                     <th>1</th>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="dark">♖</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="light">♘</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="dark">♗</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="light">♕</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="dark">♔</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="light">♗</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="dark">♘</td>
-                    <td :draggable="true" @drag="drag($event)" @drop="drop($event)" @dragover.stop class="light">♖</td>
+                    <td   @click ="getPosition($event)" id="a1" class="dark">♖</td>
+                    <td   @click ="getPosition($event)" id="b1" class="light">♘</td>
+                    <td   @click ="getPosition($event)" id="c1" class="dark">♗</td>
+                    <td   @click ="getPosition($event)" id="d1" class="light">♕</td>
+                    <td   @click ="getPosition($event)" id="e1" class="dark">♔</td>
+                    <td   @click ="getPosition($event)" id="f1" class="light">♗</td>
+                    <td   @click ="getPosition($event)" id="g1" class="dark">♘</td>
+                    <td   @click ="getPosition($event)" id="h1" class="light">♖</td>
                 </tr>
             </tbody>
         </table>
@@ -109,24 +109,32 @@
 
 export default {
   name: 'Chess',
-  methods: {
-    drag: function(ev) {
-       ev.dataTransfer.setData("piece", ev.target.id);
-        ev.dataTransfer.dropEffect ="move";
-        
-      
-       console.log(ev);
+  data () {
+        return {
+          movePhase: false
+        }
     },
-    drop:function(ev){
-    
-        ev.preventDefault();
-        var data = ev.dataTransfer.getData("piece");
-        var piece = document.getElementById(data);
-        piece.style.display= "block";
-        ev.target.appendChild(piece);
-        console.log("drop")
-    } ,
-   
+  methods: {
+    getPosition:function(ev){
+       
+       if(!this.movePhase) {
+       if(ev.target.innerText !=""){    
+       let pos = ev.target.id ;
+       let jogada={posicao:"",peca:""};
+         jogada.peca = ev.target.innerText;
+         ev.target.innerText= ""
+         this.movePhase = true;
+        jogada.posicao = pos ;
+       localStorage.setItem("jogada",JSON.stringify(jogada));
+       }else{
+           console.log(this.movePhase) ;
+       }
+       }else{
+           let jogada =JSON.parse( localStorage.getItem("jogada"));
+           ev.target.innerText = jogada.peca;
+           this.movePhase = false;
+       }
+    }
   }
  
   
