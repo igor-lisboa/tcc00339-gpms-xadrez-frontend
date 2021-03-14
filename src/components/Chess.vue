@@ -1,5 +1,8 @@
 <template>
     <div class="containerFull">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible}">
+            <!-- código do botão terá q sair futuramente -->
+            <button @click="showModal">Mostrar modal iniciação</button>
         <div class="horizontal-position">
             <div>8</div>
             <div>7</div>
@@ -102,20 +105,36 @@
                 <div id="H1" @click ="getPosition($event)">♖</div>
             </div>
         </div>
+        </div>
+        <modalIniciacao
+            v-show="isModalIniciacaoVisible"
+            @close="closeModal"
+        />
     </div>
 </template>
 
 <script>
+    import modalIniciacao from "./Modal-iniciacao";
+
     export default {
         name: 'Chess',
+        components: { 
+            modalIniciacao 
+        },
         data () {
                 return {
-                movePhase: false
+                movePhase: false,
+                isModalIniciacaoVisible: true
                 }
             },
         methods: {
+            showModal() {
+                this.isModalIniciacaoVisible = true;
+            },
+            closeModal() {
+                this.isModalIniciacaoVisible = false;
+            },
             getPosition:function(ev){
-            
                 if(!this.movePhase) {
                     if(ev.target.innerText !=""){    
                         let pos = ev.target.id ;
@@ -135,6 +154,7 @@
                     this.movePhase = false;
                 }
             }
+
         }
     }
 </script>
@@ -210,4 +230,8 @@
     .line-2 div:nth-child(2n)  {
         background: #aaa;
     }
+
+    .blur-content{
+  filter: blur(5px); 
+}
 </style>
