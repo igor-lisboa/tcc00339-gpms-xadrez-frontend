@@ -62,7 +62,7 @@
                 <div id="H5" @click ="getPosition($event)"></div>
             </div>
             <div class="row line-1">
-                <div id="A4" @click ="getPosition($event)"></div>
+                <div id="A4" @click ="getPosition($event)" ></div>
                 <div id="B4" @click ="getPosition($event)"></div>
                 <div id="C4" @click ="getPosition($event)"></div>
                 <div id="D4" @click ="getPosition($event)"></div>
@@ -78,7 +78,7 @@
                 <div id="D3" @click ="getPosition($event)"></div>
                 <div id="E3" @click ="getPosition($event)"></div>
                 <div id="F3" @click ="getPosition($event)"></div>
-                <div id="G3" @click ="getPosition($event)"></div>
+                <div id="G3" @click ="getPosition($event)" disabled = "true"></div>
                 <div id="H3" @click ="getPosition($event)"></div>
             </div>
             <div class="row line-1">
@@ -115,14 +115,14 @@
             <div>8</div>
         </div>
         <div class="vertical-position">
-            <div>H</div>
-            <div>G</div>
-            <div>F</div>
+            <div>A</div>
+            <div>B</div>
+            <div>C</div>
             <div>D</div>
             <div>E</div>
-            <div>C</div>
-            <div>B</div>
-            <div>A</div>
+            <div>F</div>
+            <div>G</div>
+            <div>H</div>
         </div>
         <div class="container">
             
@@ -205,7 +205,7 @@
                 <div id="E8" @click ="getPosition($event)">♚</div>
                 <div id="F8" @click ="getPosition($event)">♝</div>
                 <div id="G8" @click ="getPosition($event)">♞</div>
-                <div id="H7" @click ="getPosition($event)">♜</div>
+                <div id="H8" @click ="getPosition($event)">♜</div>
             </div>
             
         </div>
@@ -234,8 +234,15 @@
                         jogada.peca = ev.target.innerText;
                         this.movePhase = true;
                         jogada.posicao = pos ;
-                        localStorage.setItem("jogada",JSON.stringify(jogada));
-                        this.paintNextPos()
+                        fetch("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
+                        ).then(
+                            json => {json.data.forEach(this.paintNextPos)
+                                localStorage.setItem("positions",JSON.stringify(json.data))}
+                        
+                        ).then(localStorage.setItem("jogada",JSON.stringify(jogada)));
+                        
+                        
+                        
                     }else{
                         return;
                     }
@@ -243,16 +250,21 @@
                     let jogada =JSON.parse( localStorage.getItem("jogada"));
                     document.getElementById(this.previouspos).innerHTML= " ";
                     ev.target.innerText = jogada.peca;
-                     this.removePaint()
+                    var pos=localStorage.getItem("positions")
+                    pos= JSON.parse(pos)
+                    pos.forEach(this.removePaint)
                     this.movePhase = false;
                 }
 
             },
-            paintNextPos:function(){
-                document.getElementById("H3").classList.add("greenie");
+            paintNextPos:function(item){
+                console.log(item.casa)
+                 
+                 document.getElementById(item.casa.casa).classList.add("greenie");
             },
-            removePaint:function(){
-                document.getElementById("H3").classList.remove("greenie");
+            removePaint:function(item){
+                  
+                 document.getElementById(item.casa.casa).classList.remove("greenie");
             }
         }
     }
@@ -299,7 +311,8 @@
         height: 82px;
     }
     .greenie{
-        background:#66ff99;
+        background:#66ff99!important;
+        pointer-events: all !important;
     }
 
     /*******************  Tabuleiro ********************/
@@ -322,15 +335,18 @@
         border-bottom: 1.5px solid #000;
         text-align: center;
         font-size: 350%;
+        
     }
     .row div:first-child {
         border-left: 0;
     }
     .line-1 div:nth-child(2n+1)  {
         background: #aaa;
+        
     }
     .line-2 div:nth-child(2n)  {
         background: #aaa;
+          
     }
      
 </style>
