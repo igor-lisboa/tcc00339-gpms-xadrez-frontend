@@ -26,13 +26,20 @@
                 </div>
             </div>
             <div class="new-game">
-                <span>Iniciar novo jogo: </span>
-                <button>Iniciar agora</button>
+                <label>Iniciar novo jogo: </label>
+                <div>
+                    <input type="radio" name="optJogo" value="JxJ" checked> JxJ
+                    <input type="radio" name="optJogo" value="JxIA"> JxIA
+                    <input type="radio" name="optJogo" value="IAxIA"> IAxIA
+                  <button @click="criarSala">Iniciar agora</button>
+                </div>
             </div>
             <div class="get-in-game">
-                <span>Entrar em um jogo: </span>
-                <input placeholder="Código da sala" @keyup="keyupInput($event)">
-                <button :class="{'disabled': this.disabledButton}">Entrar</button>
+                <label>Entrar em um jogo:</label>
+                <div>
+                  <input placeholder="Código da sala" @keyup="keyupInput($event)">
+                  <button :class="{'disabled': this.disabledButton}" @click="entrarSala">Entrar</button>
+                </div>
             </div>           
         </div>
       </div>
@@ -60,6 +67,12 @@
           return;
         }
           this.disabledButton = true;
+      },
+      criarSala() {
+        console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+      },
+      entrarSala() {
+        console.log( "Selecionado entrar na sala: " + this.valueInput);
       }
     }
   };
@@ -155,26 +168,22 @@
     margin-left: 5%;
     padding: 0 10px;
   }
-  .show-information label
-  {
-    font-size: 1.5em;
-  }
 
   /***************** área de escolha de sala *******************/
   .new-game
   {
-    display: inline-block;
+    display: block;
     text-align: center;
-    font-size: 1.8em;
     width: 100%;
     padding: 0.3em;
+    font-size: 1.4em;
     border-bottom: 1px solid #6e6e70;
   }
   .get-in-game
   {
-    display: inline-block;
+    display: block;
     text-align: center;
-    font-size: 1.8em;
+    font-size: 1.4em;
     width: 100%;
     padding: 0.3em;
   }
@@ -194,6 +203,14 @@
     background-color: transparent;
     border: 1px solid #02135e;
     color: #0625b3;
+  }
+
+  /******************* demais estilos *********************/
+  .show-information label,
+  .new-game label,
+  .get-in-game label
+  {
+    font-size: 1.5em;
   }
   .disabled
   {
