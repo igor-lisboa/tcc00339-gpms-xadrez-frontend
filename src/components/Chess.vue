@@ -1,4 +1,5 @@
 <template>
+    <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible}">
             <!-- código do botão terá q sair futuramente -->
@@ -111,6 +112,7 @@
             @close="closeModal"
         />
     </div>
+    <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible}">
             <!-- código do botão terá q sair futuramente -->
@@ -219,9 +221,9 @@
                 </div>   
             </div>
         </div>
-        <modalIniciacao
+        <modal-iniciacao
+            ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
-            @close="closeModal"
         />
     </div>
 </template>
@@ -238,17 +240,30 @@
                 return {
                 movePhase: false,
                 player : "preto",
-                isModalIniciacaoVisible: true,
+                isModalIniciacaoVisible: false,
                 previouspos:""
                 }
             },
-        methods: {
-            showModal() {
+        mounted(){
+                // iniciar modal de iniciação ao carregar página
+                this.$refs.modalIniciacao.show().then((result) =>{
+                    if(result){
+                        this.isModalIniciacaoVisible = false;
+                    }
+                });
                 this.isModalIniciacaoVisible = true;
             },
-            closeModal() {
-                this.isModalIniciacaoVisible = false;
+        methods: { 
+            // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
+            showModal() {
+                this.$refs.modalIniciacao.show().then((result) =>{
+                    if(result){
+                        this.isModalIniciacaoVisible = false;
+                    }
+                })
+                this.isModalIniciacaoVisible = true;
             },
+            //função de gerenciamento da escolha de peça
             getPosition:function(ev){
                 if(!this.movePhase) {
                     if(ev.target.innerText !=""){    
@@ -258,15 +273,13 @@
                         jogada.peca = ev.target.innerText;
                         this.movePhase = true;
                         jogada.posicao = pos ;
+                        // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
                         fetch("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
                         ).then(
                             json => {json.data.forEach(this.paintNextPos)
                                 localStorage.setItem("positions",JSON.stringify(json.data))}
                         
-                        ).then(localStorage.setItem("jogada",JSON.stringify(jogada)));
-                        
-                        
-                        
+                        ).then(localStorage.setItem("jogada",JSON.stringify(jogada))); 
                     }else{
                         return;
                     }
@@ -279,18 +292,17 @@
                     pos.forEach(this.removePaint)
                     this.movePhase = false;
                 }
-
             },
+            // função para pintar as casas onde a peça pode ser movida
             paintNextPos:function(item){
                 console.log(item.casa)
                  
                  document.getElementById(item.casa.casa).classList.add("greenie");
             },
-            removePaint:function(item){
-                  
+            // função para remover a pintura de casas onde peça pode ser movida
+            removePaint:function(item){  
                  document.getElementById(item.casa.casa).classList.remove("greenie");
             }
-
         }
     }
 </script>

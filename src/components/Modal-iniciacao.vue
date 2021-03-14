@@ -1,5 +1,6 @@
 <template>
-  <transition name="modal-fade">
+<div>
+  <transition name="modal-fade" v-if="showPrincipal">
     <div class="modal-initiation">
       <div class="modal-initiation-container"
         role="dialog"
@@ -10,12 +11,6 @@
             <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
                 <img src="../assets/imgs/dog_chess.png">
                 <span>Bem-vindo ao Jogo de xadrez</span>
-            </div>
-            <!-- botão para fechar o modal terá que ser excluído futuramente -->
-            <div class="close-header">
-                <button @click="close">
-                    <img src="../assets/imgs/select_checkbox.svg">
-                </button>
             </div>
         </div>
         <div class="body">
@@ -37,7 +32,7 @@
             <div class="get-in-game">
                 <label>Entrar em um jogo:</label>
                 <div>
-                  <input placeholder="Código da sala" @keyup="keyupInput($event)">
+                  <input placeholder="Código da sala" @keyup="keyupInput($event)" v-model="valueInput">
                   <button :class="{'disabled': this.disabledButton}" @click="entrarSala">Entrar</button>
                 </div>
             </div>           
@@ -45,21 +40,43 @@
       </div>
     </div>
   </transition>
+  <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible"/>
+  </div>
 </template>
 
 <script>
+  import modalConfirmation from "./Modal-confirmation";
+
   export default {
     name: 'modalIniciacao',
+    components: { 
+      modalConfirmation
+    },
     data () {
       return {
+        showPrincipal: Boolean,
         valueInput: "",
-        disabledButton: true
+        disabledButton: true,
+        isConfirmationVisible: false,
+        resolvePromise: undefined,
+        rejectPromise: undefined
       }
     },
     methods: {
       close() {
         this.$emit('close');
       },
+      // função de criação do modal de inicição
+      show() {
+        this.showPrincipal = true;
+        this.valueInput = "";
+        this.disabledButton = true;
+        return new Promise((resolve, reject) => {
+          this.resolvePromise = resolve;
+          this.rejectPromise = reject;
+        })
+      },
+      // função de evento de keyup do input de códgio de sala
       keyupInput($event) {
         this.valueInput = $event.target.value;
         if(this.valueInput != ""){
@@ -68,11 +85,51 @@
         }
           this.disabledButton = true;
       },
-      criarSala() {
+      //função de criação de sala de jofo
+      async criarSala() {
         console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+       
+        this.$refs.modalConfirmation.show({
+          title: 'Criação de sala',
+          message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',
+          type: 'create',
+          codeRoom: undefined
+        }).then((result) =>{
+          if (result) {
+            alert('Você criou uma sala.');
+            this.resolvePromise(result);
+          } else {
+            alert('Você decidiu não criar uma sala.');
+            this.showPrincipal = true;
+          }
+          this.isConfirmationVisible = false;
+        })
+        this.showPrincipal = false;
+        this.isConfirmationVisible = true;
       },
+      //função para entrar numa sala de jogo
       entrarSala() {
         console.log( "Selecionado entrar na sala: " + this.valueInput);
+
+        this.$refs.modalConfirmation.show({
+          title: 'Entrar em sala',
+          message: 'Deseja realmente entrar na sala ' + this.valueInput + ' para iniciar um jogo?',
+          type: 'enter',
+          codeRoom: this.valueInput
+        }).then((result) =>{
+          if (result) {
+            alert('Você entrou na sala ' + this.valueInput + '.');
+            this.resolvePromise(result);
+          } else {
+            alert('Você decidiu não entrar na sala' + this.valueInput + '.');
+            this.showPrincipal = true;
+            this.valueInput = "";
+            this.disabledButton = true;
+          }
+          this.isConfirmationVisible = false;
+        });
+        this.showPrincipal = false;
+        this.isConfirmationVisible = true;
       }
     }
   };
