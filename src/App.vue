@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Chess from './components/Chess.vue'
+import Chess from './components/Chess.vue';
 
 export default {
   name: 'App',
