@@ -41,12 +41,13 @@
     </div>
   </transition>
   <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible"/>
+
   </div>
 </template>
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
-
+   
   export default {
     name: 'modalIniciacao',
     components: { 
@@ -58,6 +59,7 @@
         valueInput: "",
         disabledButton: true,
         isConfirmationVisible: false,
+        isChoosePieceVisible :false,
         resolvePromise: undefined,
         rejectPromise: undefined
       }
@@ -85,10 +87,10 @@
         }
           this.disabledButton = true;
       },
-      //função de criação de sala de jofo
+      
       async criarSala() {
         console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
-       
+
         this.$refs.modalConfirmation.show({
           title: 'Criação de sala',
           message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',

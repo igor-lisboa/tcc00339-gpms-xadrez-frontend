@@ -230,7 +230,7 @@
 
 <script>
     import modalIniciacao from "./Modal-iniciacao";
-
+    import axios from 'axios'
     export default {
         name: 'Chess',
         components: { 
@@ -257,7 +257,9 @@
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModal() {
                 this.$refs.modalIniciacao.show().then((result) =>{
+                    console.log(result)
                     if(result){
+                        
                         this.isModalIniciacaoVisible = false;
                     }
                 })
@@ -275,7 +277,7 @@
                         this.movePhase = true;
                         jogada.posicao = pos ;
                         // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
-                        fetch("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
+                        axios.get("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
                         ).then(
                             json => {
                                 if(json.data != null){
@@ -289,10 +291,13 @@
                     }
                 }else{
                     let jogada =JSON.parse( localStorage.getItem("jogada"));
+                    let actualPos = ev.target.id ;
                     document.getElementById(this.previouspos).style.backgroundImage = "";
                     ev.target.style.backgroundImage = jogada.peca;
+                    axios.post("http://localhost:3333/jogos/0/pecas/"+this.previouspos +"/move/"+ actualPos).then((response)=>console.log(response.json()))
                     var pos=localStorage.getItem("positions")
                     pos= JSON.parse(pos)
+                    
                     if(this.removePaint != null){
                         pos.forEach(this.removePaint)
                     } 
@@ -308,6 +313,8 @@
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){  
                  document.getElementById(item.casa.casa).classList.remove("greenie");
+                 
+                 this.movePhase = false;
             }
         }
     }
