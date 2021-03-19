@@ -11,24 +11,16 @@
                 <img src="../assets/imgs/dog_chess_confirm.png">
                 <span>{{title}}</span>
             </div>
-            <div class="close-header">
-                <button @click="cancelar">
-                    <img src="../assets/imgs/select_checkbox.svg">
-                </button>
-            </div>
         </div>
         <div class="body">
             <div class="message">
                 <label>{{message}}</label>
-               <div>
-                   <input type="radio" name="optJogo" value="branco" checked> branco 
-                    <input type="radio" name="optJogo" value="preto"> preto
-                    
+                <div>
+                   <input type="radio" name="optJogo" value="branco" checked> Branco 
+                    <input type="radio" name="optJogo" value="preto"> Preto 
                 </div>   
                 <div>
-                 
-                  <button class="confirm" @click="confirmar">SIM</button> 
-                  <button class="cancel" @click="cancelar">NÃO</button>
+                  <button class="confirm" @click="confirmar">CONFIRMAR ESCOLHA</button> 
                 </div>
             </div>          
         </div>
@@ -56,18 +48,14 @@
         show(opts = {}) {
             this.title = opts.title;
             this.message = opts.message;
-            this.type = opts.type;
-            this.codeRoom = opts.codeRoom;
             return new Promise((resolve, reject) => {
-                this.resolvePromise = document.querySelectorAll("input[name=optJogo]:checked")[0].value;
+                this.resolvePromise = resolve;
                 this.rejectPromise = reject;
             })
         },
         // função para evento de confirmação
         confirmar() {
-            //usar a variável type = 'create' para criar sala
-            //usar a variável type = 'enter' e codeRoom para entrar numa sal
-            localStorage.setItem("color",document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+            this.resolvePromise(document.querySelectorAll("input[name=optJogo]:checked")[0].value);
         },
         // função para evento de desaprovação
         cancelar() {

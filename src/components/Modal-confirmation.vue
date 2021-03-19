@@ -58,8 +58,6 @@
         },
         // função para evento de confirmação
         confirmar() {
-            //usar a variável type = 'create' para criar sala
-            //usar a variável type = 'enter' e codeRoom para entrar numa sala
             this.resolvePromise(true);
         },
         // função para evento de desaprovação

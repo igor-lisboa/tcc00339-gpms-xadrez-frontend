@@ -1,7 +1,7 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showModal">Mostrar modal iniciação</button>
             <div class="horizontal-position">
@@ -110,6 +110,10 @@
         <modal-iniciacao
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
+        />
+        <modal-choose-piece
+            ref="modalChoosePiece"
+            v-show="isModalChoosePieceVisible"
         />
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
@@ -225,23 +229,30 @@
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
         />
+        <modal-choose-piece
+            ref="modalChoosePiece"
+            v-show="isModalChoosePieceVisible"
+        />
     </div>
 </template>
 
 <script>
     import modalIniciacao from "./Modal-iniciacao";
-    import axios from 'axios'
+    import modalChoosePiece from "./Choose-piece";
+    import axios from 'axios';
     export default {
         name: 'Chess',
         components: { 
-            modalIniciacao 
+            modalIniciacao,
+            modalChoosePiece 
         },
         data () {
                 return {
                 movePhase: false,
                 player : "branco",
                 isModalIniciacaoVisible: false,
-                previouspos:""
+                previouspos:"",
+                isModalChoosePieceVisible: false
                 }
             },
         mounted(){
@@ -249,6 +260,21 @@
                 this.$refs.modalIniciacao.show().then((result) =>{
                     if(result){
                         this.isModalIniciacaoVisible = false;
+                        
+                        this.$refs.modalChoosePiece.show({
+                            title: 'Escolha de cor das peças',
+                            message: 'Deseja qual cor de peça para iniciar o jogo?',
+                            type: 'create',
+                            codeRoom: undefined
+                        }).then((result) =>{
+                            
+                            if(result)
+                            console.log(result);
+                            this.player = result;
+
+                            this.isModalChoosePieceVisible = false;
+                        }); 
+                        this.isModalChoosePieceVisible = true;
                     }
                 });
                 this.isModalIniciacaoVisible = true;
