@@ -4,6 +4,7 @@
         <div :class="{'blur-content': this.isModalIniciacaoVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showModal">Mostrar modal iniciação</button>
+            <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
                 <div>8</div>
                 <div>7</div>
@@ -225,34 +226,38 @@
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
         />
+        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
 </template>
 
 <script>
     import modalIniciacao from "./Modal-iniciacao";
+    import modalResultado from "./Modal-resultado";
 
     export default {
         name: 'Chess',
         components: { 
-            modalIniciacao 
+            modalIniciacao,
+            modalResultado 
         },
         data () {
-                return {
+            return {
                 movePhase: false,
                 player : "branco",
                 isModalIniciacaoVisible: false,
+                isModalResultadoVisible: false,
                 previouspos:""
-                }
-            },
+            }
+        },
         mounted(){
-                // iniciar modal de iniciação ao carregar página
-                this.$refs.modalIniciacao.show().then((result) =>{
-                    if(result){
-                        this.isModalIniciacaoVisible = false;
-                    }
-                });
-                this.isModalIniciacaoVisible = true;
-            },
+            // iniciar modal de iniciação ao carregar página
+            this.$refs.modalIniciacao.show().then((result) =>{
+                if(result){
+                    this.isModalIniciacaoVisible = false;
+                }
+            });
+            this.isModalIniciacaoVisible = true;
+        },
         methods: { 
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModal() {
@@ -262,6 +267,11 @@
                     }
                 })
                 this.isModalIniciacaoVisible = true;
+            },
+            showResult() {
+                console.log("cliquei")
+                // this.$refs.modalResultado.gameResult({ result: 'win' });
+                this.isModalResultadoVisible = true;
             },
             //função de gerenciamento da escolha de peça
             getPosition:function(ev){
