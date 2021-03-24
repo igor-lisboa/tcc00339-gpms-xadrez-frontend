@@ -116,12 +116,14 @@
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
         />
+        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showModal">Mostrar modal iniciação</button>
+             <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
                 <div>1</div>
                 <div>2</div>
@@ -234,6 +236,7 @@
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
         />
+        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
 </template>
 
@@ -253,11 +256,11 @@
         data () {
             return {
                 movePhase: false,
-                player : "branco",
+                player: "branco",
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
-                previouspos:""
+                previouspos: ""
             }
         },
         mounted(){
