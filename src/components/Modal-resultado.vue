@@ -12,11 +12,6 @@
                   <img src="../assets/imgs/dog_chess.png" alt="logo">
                   <span>{{title}}</span>
               </div>
-              <div class="close-header">
-                  <button>
-                      <img src="../assets/imgs/select_checkbox.svg" alt="close button">
-                  </button>
-              </div>
           </div>
           <div class="body">
               <div class="message">

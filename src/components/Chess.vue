@@ -1,7 +1,7 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showModal">Mostrar modal iniciação</button>
             <button @click="showResult">Mostrar resultado</button>
@@ -112,12 +112,18 @@
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
         />
+        <modal-choose-piece
+            ref="modalChoosePiece"
+            v-show="isModalChoosePieceVisible"
+        />
+        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showModal">Mostrar modal iniciação</button>
+             <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
                 <div>1</div>
                 <div>2</div>
@@ -226,27 +232,35 @@
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
         />
+        <modal-choose-piece
+            ref="modalChoosePiece"
+            v-show="isModalChoosePieceVisible"
+        />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
 </template>
 
 <script>
     import modalIniciacao from "./Modal-iniciacao";
+    import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
-
+    import axios from 'axios';
+    
     export default {
         name: 'Chess',
         components: { 
             modalIniciacao,
+            modalChoosePiece, 
             modalResultado 
         },
         data () {
             return {
                 movePhase: false,
-                player : "branco",
+                player: "branco",
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
-                previouspos:""
+                isModalChoosePieceVisible: false,
+                previouspos: ""
             }
         },
         mounted(){
@@ -254,6 +268,21 @@
             this.$refs.modalIniciacao.show().then((result) =>{
                 if(result){
                     this.isModalIniciacaoVisible = false;
+                        
+                        this.$refs.modalChoosePiece.show({
+                            title: 'Escolha de cor das peças',
+                            message: 'Deseja qual cor de peça para iniciar o jogo?',
+                            type: 'create',
+                            codeRoom: undefined
+                        }).then((result) =>{
+                            
+                            if(result)
+                            console.log(result);
+                            this.player = result;
+
+                            this.isModalChoosePieceVisible = false;
+                        }); 
+                        this.isModalChoosePieceVisible = true;
                 }
             });
             this.isModalIniciacaoVisible = true;
@@ -262,7 +291,9 @@
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModal() {
                 this.$refs.modalIniciacao.show().then((result) =>{
+                    console.log(result)
                     if(result){
+                        
                         this.isModalIniciacaoVisible = false;
                     }
                 })
@@ -285,7 +316,7 @@
                         this.movePhase = true;
                         jogada.posicao = pos ;
                         // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
-                        fetch("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
+                        axios.get("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
                         ).then(
                             json => {
                                 if(json.data != null){
@@ -299,10 +330,13 @@
                     }
                 }else{
                     let jogada =JSON.parse( localStorage.getItem("jogada"));
+                    let actualPos = ev.target.id ;
                     document.getElementById(this.previouspos).style.backgroundImage = "";
                     ev.target.style.backgroundImage = jogada.peca;
+                    axios.post("http://localhost:3333/jogos/0/pecas/"+this.previouspos +"/move/"+ actualPos).then((response)=>console.log(response.json()))
                     var pos=localStorage.getItem("positions")
                     pos= JSON.parse(pos)
+                    
                     if(this.removePaint != null){
                         pos.forEach(this.removePaint)
                     } 
@@ -318,6 +352,8 @@
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){  
                  document.getElementById(item.casa.casa).classList.remove("greenie");
+                 
+                 this.movePhase = false;
             }
         }
     }
