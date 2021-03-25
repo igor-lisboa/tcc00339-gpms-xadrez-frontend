@@ -12,17 +12,12 @@
                   <img src="../assets/imgs/dog_chess.png" alt="logo">
                   <span>{{title}}</span>
               </div>
-              <div class="close-header">
-                  <button>
-                      <img src="../assets/imgs/select_checkbox.svg" alt="close button">
-                  </button>
-              </div>
           </div>
           <div class="body">
               <div class="message">
                   <label>{{message}}</label>
                   <div>
-                      <button class="rematch">REVANCHE</button>
+                      <button class="rematch" @click="rematch">REVANCHE</button>
                       <button class="play-again" @click="newGame">NOVO JOGO</button> 
                   </div>
               </div>          
@@ -41,7 +36,7 @@
         data() {
             return { 
               title: null,
-              message: '',
+              message: null,
               isIniciationVisible: false
             }
         },
@@ -53,22 +48,28 @@
             newGame() {
                 this.isIniciationVisible = true;
             },
-            gameResult(event) {
-              const { result } = event;
-
+            
+            gameResult({ result }) {
               switch(result) {
                 case 'win':
                   this.title = 'Vitória';
+                  this.message = 'Parabéns pela sua vitória!'
                   break;
                 case 'lose':
                   this.title = 'Perdeu';
+                  this.message = 'Não foi dessa vez! Tente novamente!'
                   break;
                 case 'tie':
                   this.title = 'Empatou';
+                  this.message = 'Você e seu adversário empataram nesse jogo!'
                   break;
               }
-
+            
               return Promise.resolve(result);
+            },
+
+            rematch() {
+              alert('Chegou o seu momento de brilhar')
             }
         },
     }
@@ -116,20 +117,6 @@
     margin: 0 1em 0 1em;
     width: 20%;
     border-radius: 80px;
-  }
-  div.close-header {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-  }
-  div.close-header button {
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    transition: .2s;
-  }
-  div.close-header button img {
-    width: 60%;
   }
   .modal-result .body {
     margin-top: 140px;

@@ -112,6 +112,7 @@
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
         />
+        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
@@ -269,9 +270,12 @@
                 this.isModalIniciacaoVisible = true;
             },
             showResult() {
-                console.log("cliquei")
-                // this.$refs.modalResultado.gameResult({ result: 'win' });
-                this.isModalResultadoVisible = true;
+                const result = 'win';
+
+                this.$refs.modalResultado.gameResult({ result }).then((response) =>{
+                    if(response) this.isModalResultadoVisible = true;
+                    else this.isModalResultadoVisible = false;
+                });
             },
             //função de gerenciamento da escolha de peça
             getPosition:function(ev){
