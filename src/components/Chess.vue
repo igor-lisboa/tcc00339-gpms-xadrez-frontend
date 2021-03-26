@@ -266,6 +266,7 @@
         mounted(){
             // iniciar modal de iniciação ao carregar página
             this.$refs.modalIniciacao.show().then((result) =>{
+                console.log(result)
                 if(result){
                     this.isModalIniciacaoVisible = false;
                         
@@ -275,12 +276,12 @@
                             type: 'create',
                             codeRoom: undefined
                         }).then((result) =>{
-                            
-                            if(result)
-                            console.log(result);
-                            this.player = result;
+                            if(result) {
+                                console.log(result);
+                                this.player = result;
 
-                            this.isModalChoosePieceVisible = false;
+                                this.isModalChoosePieceVisible = false;
+                            }
                         }); 
                         this.isModalChoosePieceVisible = true;
                 }

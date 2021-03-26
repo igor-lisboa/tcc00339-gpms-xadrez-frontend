@@ -47,6 +47,7 @@
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
+  import axios from "axios";
    
   export default {
     name: 'modalIniciacao',
@@ -90,15 +91,24 @@
       
       async criarSala() {
         console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+        const codeRoom = Math.random().toString(36).substring(7);
+
+        const io = require("socket.io-client");
 
         this.$refs.modalConfirmation.show({
           title: 'Criação de sala',
           message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',
           type: 'create',
-          codeRoom: undefined
+          codeRoom,
         }).then((result) =>{
           if (result) {
-            alert('Você criou uma sala.');
+            axios.post("http://localhost:3333/jogos", {"tipoJogo": "0"}).then((response) => console.log(response));
+
+            const socket = io("http://localhost:3333");
+            socket.on("connect", () => {
+              socket.send("Hello!");
+            })
+            alert(`Você criou uma sala. O código da sala é ${result}`);
             this.resolvePromise(result);
           } else {
             alert('Você decidiu não criar uma sala.');
