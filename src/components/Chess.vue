@@ -267,6 +267,7 @@
         mounted(){
             // iniciar modal de iniciação ao carregar página
             this.$refs.modalIniciacao.show().then((result) =>{
+                console.log(result)
                 if(result){
                     this.isModalIniciacaoVisible = false;
                         
@@ -276,10 +277,10 @@
                             type: 'create',
                             codeRoom: undefined
                         }).then((result) =>{
-                            
-                            if(result){
-                            console.log(result);
-                            this.player = result;
+                            if(result) {
+                     
+                                console.log(result);
+                                this.player = result;
                             if(result=="branco"){
                                this.playerconf.ladoId=0
                             }else{
@@ -288,7 +289,8 @@
                              axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id))
                             }
 
-                            this.isModalChoosePieceVisible = false;
+                                this.isModalChoosePieceVisible = false;
+                            }
                         }); 
                         this.isModalChoosePieceVisible = true;
                 }
