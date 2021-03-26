@@ -100,14 +100,16 @@
           type: 'create',
           codeRoom,
         }).then((result) =>{
+
           if (result) {
-            axios.post("http://localhost:3333/jogos", {"tipoJogo": "0"}).then((response) => console.log(response));
+            axios.post("http://localhost:3333/jogos").then( response =>response).then(data=> localStorage.setItem("idjogo",data.data.data.id))
+            //axios.post("http://localhost:3333/jogos", {"tipoJogo": "0"}).then((response) => console.log(response));
 
             const socket = io("http://localhost:3333");
             socket.on("connect", () => {
               socket.send("Hello!");
             })
-            alert(`Você criou uma sala. O código da sala é ${result}`);
+            alert(`Você criou uma sala. O código da sala é ${localStorage.getItem("idjogo")}`);
             this.resolvePromise(result);
           } else {
             alert('Você decidiu não criar uma sala.');

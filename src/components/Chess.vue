@@ -288,9 +288,7 @@
                             }
                              axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id))
                             }
-
                                 this.isModalChoosePieceVisible = false;
-                            }
                         }); 
                         this.isModalChoosePieceVisible = true;
                 }
@@ -330,7 +328,7 @@
                                 method: 'get',
                                 url: 'http://localhost:3333/jogos/'+localStorage.getItem("idjogo")+'/pecas/'+pos+'/possiveis-jogadas',
                                 headers: { 
-                                    'lado': localStorage.getItem("ladoId")
+                                    'lado': this.playerconf.ladoId
                                 }
                                 };
                         axios(config).then(response => response
