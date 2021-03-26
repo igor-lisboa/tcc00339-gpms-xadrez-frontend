@@ -47,7 +47,7 @@
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
-   
+  import axios from "axios"  
   export default {
     name: 'modalIniciacao',
     components: { 
@@ -99,6 +99,7 @@
         }).then((result) =>{
           if (result) {
             alert('Você criou uma sala.');
+            axios.post("http://localhost:3333/jogos").then( response =>response).then(data=> localStorage.setItem("idjogo",data.data.data.id))
             this.resolvePromise(result);
           } else {
             alert('Você decidiu não criar uma sala.');
@@ -120,7 +121,18 @@
           codeRoom: this.valueInput
         }).then((result) =>{
           if (result) {
+            var config = {
+                        method: 'get',
+                        url: 'http://localhost:3333/jogos/'+this.valueInput,
+                        };
+        axios(config).then(response =>{
+          if(response.status==200){
             alert('Você entrou na sala ' + this.valueInput + '.');
+            localStorage.setItem("idjogo",response.data.data.id)
+        }} )
+        
+            alert('Você entrou na sala ' + this.valueInput + '.');
+              
             this.resolvePromise(result);
           } else {
             alert('Você decidiu não entrar na sala' + this.valueInput + '.');

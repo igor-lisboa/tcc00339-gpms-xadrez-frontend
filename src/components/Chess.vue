@@ -260,7 +260,8 @@
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
-                previouspos: ""
+                previouspos: "",
+                playerconf:{ladoId:0, tipoId:0}
             }
         },
         mounted(){
@@ -276,9 +277,16 @@
                             codeRoom: undefined
                         }).then((result) =>{
                             
-                            if(result)
+                            if(result){
                             console.log(result);
                             this.player = result;
+                            if(result=="branco"){
+                               this.playerconf.ladoId=0
+                            }else{
+                                this.playerconf.ladoId=1
+                            }
+                             axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id))
+                            }
 
                             this.isModalChoosePieceVisible = false;
                         }); 
@@ -316,12 +324,20 @@
                         this.movePhase = true;
                         jogada.posicao = pos ;
                         // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
-                        axios.get("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
+                        var config = {
+                                method: 'get',
+                                url: 'http://localhost:3333/jogos/'+localStorage.getItem("idjogo")+'/pecas/'+pos+'/possiveis-jogadas',
+                                headers: { 
+                                    'lado': localStorage.getItem("ladoId")
+                                }
+                                };
+                        axios(config).then(response => response
                         ).then(
                             json => {
+                                console.log("data"+json.data.data);
                                 if(json.data != null){
-                                    json.data.forEach(this.paintNextPos)
-                                    localStorage.setItem("positions",JSON.stringify(json.data))
+                                    json.data.data.forEach(this.paintNextPos)
+                                    localStorage.setItem("positions",JSON.stringify(json.data.data))
                                 }
                             } 
                         ).then(localStorage.setItem("jogada",JSON.stringify(jogada))); 
@@ -333,7 +349,14 @@
                     let actualPos = ev.target.id ;
                     document.getElementById(this.previouspos).style.backgroundImage = "";
                     ev.target.style.backgroundImage = jogada.peca;
-                    axios.post("http://localhost:3333/jogos/0/pecas/"+this.previouspos +"/move/"+ actualPos).then((response)=>console.log(response.json()))
+                     config = {
+                                method: 'post',
+                                url: 'http://localhost:3333/jogos/'+localStorage.getItem("idjogo")+'/pecas/'+this.previouspos +'/move/'+ actualPos,
+                                headers: { 
+                                    'lado': localStorage.getItem("ladoId")
+                                }
+                                };
+                    axios(config).then(response=>console.log("esse"+response)).then(console.log("foi")).catch(error=>console.log(error))
                     var pos=localStorage.getItem("positions")
                     pos= JSON.parse(pos)
                     
