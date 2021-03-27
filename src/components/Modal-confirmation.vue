@@ -51,7 +51,10 @@
             this.message = opts.message;
             this.type = opts.type;
             this.codeRoom = opts.codeRoom;
-            return Promise.resolve(this.codeRoom);
+            return new Promise((resolve, reject) => {
+              this.resolvePromise = resolve;
+              this.rejectPromise = reject;
+        })
         },
         // função para evento de confirmação
         confirmar() {
