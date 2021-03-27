@@ -23,9 +23,9 @@
             <div class="new-game">
                 <label>Iniciar novo jogo: </label>
                 <div>
-                    <input type="radio" name="optJogo" value="JxJ" checked> JxJ
-                    <input type="radio" name="optJogo" value="JxIA"> JxIA
-                    <input type="radio" name="optJogo" value="IAxIA"> IAxIA
+                    <input type="radio" name="optJogo" value="0" checked> JxJ
+                    <input type="radio" name="optJogo" value="1"> JxIA
+                    <input type="radio" name="optJogo" value="2"> IAxIA
                   <button @click="criarSala">Iniciar agora</button>
                 </div>
             </div>
@@ -47,7 +47,8 @@
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
-  import axios from "axios"  
+  import http from './config/Http';
+  
   export default {
     name: 'modalIniciacao',
     components: { 
@@ -55,19 +56,18 @@
     },
     data () {
       return {
-        showPrincipal: Boolean,
-        valueInput: "",
-        disabledButton: true,
-        isConfirmationVisible: false,
-        isChoosePieceVisible :false,
-        resolvePromise: undefined,
-        rejectPromise: undefined
+        showPrincipal: Boolean,                 // variável que indica se modal de iniciação deve ser visível
+        valueInput: "",                         // valor do campo que possui código da sala
+        disabledButton: true,                   // variável que indica se botão deve ser desabilitado
+        isConfirmationVisible: false,           // variável que indica se o modal de confiramção deve ser visível
+        isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
+        gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
+        resolvePromise: undefined,              // variável para retorno das informações do modal
+        rejectPromise: undefined                // variável para retorno das informações do modal
       }
     },
     methods: {
-      close() {
-        this.$emit('close');
-      },
+
       // função de criação do modal de inicição
       show() {
         this.showPrincipal = true;
@@ -78,73 +78,98 @@
           this.rejectPromise = reject;
         })
       },
+
       // função de evento de keyup do input de códgio de sala
       keyupInput($event) {
         this.valueInput = $event.target.value;
-        if(this.valueInput != ""){
+
+        if(this.valueInput != ""){                           // habilita o botão se houver se for informado um código de sala
           this.disabledButton = false;
           return;
         }
           this.disabledButton = true;
       },
       
+      //função de criação de sala
       async criarSala() {
         console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
-        const codeRoom = Math.random().toString(36).substring(7);
+        this.gameMode = document.querySelectorAll("input[name=optJogo]:checked")[0].value;
 
-        const io = require("socket.io-client");
-
+        //aciona modal de confirmação
         this.$refs.modalConfirmation.show({
           title: 'Criação de sala',
           message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',
-          type: 'create',
-          codeRoom,
-        }).then((result) =>{
+          type: 'create'
+        }).then(async (result) =>{ 
 
-          if (result) {
-            axios.post("http://localhost:3333/jogos").then( response =>response).then(data=> localStorage.setItem("idjogo",data.data.data.id))
-            //axios.post("http://localhost:3333/jogos", {"tipoJogo": "0"}).then((response) => console.log(response));
+          if (result)                                          //caso seja confirmado criação da sala
+          {                                              
+            await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
+              .then( response => response)
+                .then(data=> {console.log(data);
+                localStorage.setItem("idjogo",data.data.data.id)});
 
-            const socket = io("http://localhost:3333");
-            socket.on("connect", () => {
-              socket.send("Hello!");
-            })
             alert(`Você criou uma sala. O código da sala é ${localStorage.getItem("idjogo")}`);
-            this.resolvePromise(result);
-          } else {
+            localStorage.setItem("acao", "criacao");
+            this.resolvePromise(result); 
+
+          }
+          else                                               //caso não seja confirmado a criação da sala
+          {                                                   
             alert('Você decidiu não criar uma sala.');
             this.showPrincipal = true;
           }
           this.isConfirmationVisible = false;
-        })
+        });
+
         this.showPrincipal = false;
         this.isConfirmationVisible = true;
       },
+
       //função para entrar numa sala de jogo
       entrarSala() {
         console.log( "Selecionado entrar na sala: " + this.valueInput);
 
+        //aciona modal de confirmação
         this.$refs.modalConfirmation.show({
           title: 'Entrar em sala',
           message: 'Deseja realmente entrar na sala ' + this.valueInput + ' para iniciar um jogo?',
           type: 'enter',
           codeRoom: this.valueInput
-        }).then((result) =>{
-          if (result) {
-            var config = {
-                        method: 'get',
-                        url: 'http://localhost:3333/jogos/'+this.valueInput,
-                        };
-        axios(config).then(response =>{
-          if(response.status==200){
-            alert('Você entrou na sala ' + this.valueInput + '.');
-            localStorage.setItem("idjogo",response.data.data.id)
-        }} )
-        
-            alert('Você entrou na sala ' + this.valueInput + '.');
-              
+        }).then(async (result) =>{
+
+          if (result)                                                      //caso seja confirmado entrar na sala
+          {
+            await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
+              .then(async (response) =>{
+                if(response.status==200){
+                  
+                  localStorage.setItem("idjogo", response.data.data.id);
+
+                  if(response.data.data.ladoSemJogador != -1 || response.data.data.ladoSemJogador != null)       //verificação se pode entrar em sala
+                  {       
+                    localStorage.setItem("ladoId", response.data.data.ladoSemJogador);
+                    let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0}
+                    await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)             //acessa endpoint de inclusão de jogador
+                      .then(response=>response)
+                        .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+
+                    localStorage.setItem("acao", "entrada");
+                  }
+                  else
+                  {
+                    alert("Sala cheia!")
+                  }
+
+                  alert('Você entrou na sala ' + this.valueInput + '.');
+                }
+              }
+            );
+
             this.resolvePromise(result);
-          } else {
+          } 
+          else                                                               //caso não seja confirmado entrar na sala 
+          {
             alert('Você decidiu não entrar na sala' + this.valueInput + '.');
             this.showPrincipal = true;
             this.valueInput = "";
@@ -152,6 +177,7 @@
           }
           this.isConfirmationVisible = false;
         });
+
         this.showPrincipal = false;
         this.isConfirmationVisible = true;
       }

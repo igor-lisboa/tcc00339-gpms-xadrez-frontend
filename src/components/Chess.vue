@@ -260,6 +260,7 @@
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
+                idGame: undefined,
                 previouspos: "",
                 playerconf:{ladoId:0, tipoId:0}
             }
@@ -270,27 +271,36 @@
                 console.log(result)
                 if(result){
                     this.isModalIniciacaoVisible = false;
-                        
+                    
+                    if ( localStorage.getItem("acao") === "criacao" ){
+                    
                         this.$refs.modalChoosePiece.show({
                             title: 'Escolha de cor das peças',
                             message: 'Deseja qual cor de peça para iniciar o jogo?',
                             type: 'create',
                             codeRoom: undefined
-                        }).then((result) =>{
+                        }).then(async (result) =>{
                             if(result) {
-                     
-                                console.log(result);
-                                this.player = result;
-                            if(result=="branco"){
-                               this.playerconf.ladoId=0
-                            }else{
-                                this.playerconf.ladoId=1
-                            }
-                             axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id))
-                            }
+                                    console.log(result);
+                                    this.player = result;
+                                    if(result=="branco"){
+                                        this.playerconf.ladoId=0
+                                    }else{
+                                        this.playerconf.ladoId=1
+                                    }
+                                        await axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                    }                              
                                 this.isModalChoosePieceVisible = false;
                         }); 
                         this.isModalChoosePieceVisible = true;
+                    }
+                    if( localStorage.getItem("acao") === "entrada")
+                    {
+                        this.playerconf.ladoId = localStorage.getItem("ladoId");
+                        this.playerconf.tipoId = 0;
+                    }
+                    this.idGame = localStorage.getItem("idjogo");
+                    localStorage.clear();
                 }
             });
             this.isModalIniciacaoVisible = true;
@@ -329,7 +339,7 @@
                         // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
                         var config = {
                                 method: 'get',
-                                url: 'http://localhost:3333/jogos/'+localStorage.getItem("idjogo")+'/pecas/'+pos+'/possiveis-jogadas',
+                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+pos+'/possiveis-jogadas',
                                 headers: { 
                                     'lado': this.playerconf.ladoId
                                 }
@@ -354,7 +364,7 @@
                     ev.target.style.backgroundImage = jogada.peca;
                      config = {
                                 method: 'post',
-                                url: 'http://localhost:3333/jogos/'+localStorage.getItem("idjogo")+'/pecas/'+this.previouspos +'/move/'+ actualPos,
+                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+this.previouspos +'/move/'+ actualPos,
                                 headers: { 
                                     'lado': localStorage.getItem("ladoId")
                                 }
