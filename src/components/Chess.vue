@@ -3,7 +3,6 @@
     <div v-if="player=='branco'" class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
             <!-- código do botão terá q sair futuramente -->
-            <button @click="showModal">Mostrar modal iniciação</button>
             <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
                 <div>8</div>
@@ -117,12 +116,12 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <toast ref="toast"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
             <!-- código do botão terá q sair futuramente -->
-            <button @click="showModal">Mostrar modal iniciação</button>
              <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
                 <div>1</div>
@@ -237,6 +236,7 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <toast ref="toast"/>
     </div>
 </template>
 
@@ -244,14 +244,18 @@
     import modalIniciacao from "./Modal-iniciacao";
     import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
-    import axios from 'axios';
+    import toast from "./Toast";
+    import http from './config/Http';
+
+    import axios from "axios";
     
     export default {
         name: 'Chess',
         components: { 
             modalIniciacao,
             modalChoosePiece, 
-            modalResultado 
+            modalResultado,
+            toast 
         },
         data () {
             return {
@@ -268,39 +272,60 @@
         mounted(){
             // iniciar modal de iniciação ao carregar página
             this.$refs.modalIniciacao.show().then((result) =>{
-                console.log(result)
                 if(result){
+
                     this.isModalIniciacaoVisible = false;
                     
-                    if ( localStorage.getItem("acao") === "criacao" ){
+                    if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
                     
                         this.$refs.modalChoosePiece.show({
                             title: 'Escolha de cor das peças',
                             message: 'Deseja qual cor de peça para iniciar o jogo?',
                             type: 'create',
                             codeRoom: undefined
-                        }).then(async (result) =>{
+                        }).then( async (result) =>{
                             if(result) {
-                                    console.log(result);
-                                    this.player = result;
-                                    if(result=="branco"){
-                                        this.playerconf.ladoId=0
-                                    }else{
-                                        this.playerconf.ladoId=1
-                                    }
-                                        await axios.post("http://localhost:3333/jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf).then(response=>response).then(json=> localStorage.setItem("ladoId",json.data.data.id));
-                                    }                              
-                                this.isModalChoosePieceVisible = false;
+                                console.log(result);
+                                this.player = result;
+                                result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
+                                try
+                                {
+                                    await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
+                                        .then(response=>response)
+                                            .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                    this.idGame = localStorage.getItem("idjogo");
+
+                                    // mostra notificação de sucesso ao criar sala
+                                    this.$refs.toast.show({
+                                        message: 'Criado jogo na sala de código ' + this.idGame,
+                                        type: 'success'
+                                    });
+                                }
+                                catch(error)
+                                {
+                                    // mostra notificação de erro ao escolher cor da peça
+                                    this.$refs.toast.show({
+                                        message: 'Erro ao criar sala (escolha de cor de peça)',
+                                        type: 'error'
+                                    });
+                                    this.isModalIniciacaoVisible = true;      
+                                }
+                                   
+                                localStorage.clear();
+                            }                              
+                            this.isModalChoosePieceVisible = false;
+                            console.log('inicial: ' + this.isModalIniciacaoVisible);
                         }); 
                         this.isModalChoosePieceVisible = true;
                     }
-                    if( localStorage.getItem("acao") === "entrada")
+
+                    if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
                     {
                         this.playerconf.ladoId = localStorage.getItem("ladoId");
                         this.playerconf.tipoId = 0;
+                        this.idGame = localStorage.getItem("idjogo");
+                        localStorage.clear();
                     }
-                    this.idGame = localStorage.getItem("idjogo");
-                    localStorage.clear();
                 }
             });
             this.isModalIniciacaoVisible = true;

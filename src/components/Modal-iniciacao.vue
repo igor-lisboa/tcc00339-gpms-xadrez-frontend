@@ -41,18 +41,20 @@
     </div>
   </transition>
   <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible"/>
-
+  <toast ref="toast"/>
   </div>
 </template>
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
+  import toast from "./Toast";
   import http from './config/Http';
   
   export default {
     name: 'modalIniciacao',
     components: { 
-      modalConfirmation
+      modalConfirmation,
+      toast
     },
     data () {
       return {
@@ -103,20 +105,32 @@
         }).then(async (result) =>{ 
 
           if (result)                                          //caso seja confirmado criação da sala
-          {                                              
-            await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
-              .then( response => response)
-                .then(data=> {console.log(data);
-                localStorage.setItem("idjogo",data.data.data.id)});
+          { 
+            try
+            {                                             
+              await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
+                .then( response => response)
+                  .then(data=> {console.log(data);
+                    localStorage.setItem("idjogo",data.data.data.id)
+                  });
+            }
+            catch(error)
+            {
+              // mostra notificação de erro ao tentar criar sala e retorna para iniciação
+              this.$refs.toast.show({
+                message: 'Erro ao criar a sala',
+                type: 'error'
+              });
+              this.showPrincipal = true;
+              this.resolvePromise(false);
+            }
 
-            alert(`Você criou uma sala. O código da sala é ${localStorage.getItem("idjogo")}`);
             localStorage.setItem("acao", "criacao");
             this.resolvePromise(result); 
 
           }
-          else                                               //caso não seja confirmado a criação da sala
+          else                                               //caso não seja confirmado pelo back a criação da sala
           {                                                   
-            alert('Você decidiu não criar uma sala.');
             this.showPrincipal = true;
           }
           this.isConfirmationVisible = false;
@@ -140,37 +154,59 @@
 
           if (result)                                                      //caso seja confirmado entrar na sala
           {
-            await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
-              .then(async (response) =>{
-                if(response.status==200){
-                  
-                  localStorage.setItem("idjogo", response.data.data.id);
+            try
+            {
+              await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
+                .then(async (response) =>{
+                  if(response.status==200){
+                    
+                    localStorage.setItem("idjogo", response.data.data.id);
 
-                  if(response.data.data.ladoSemJogador != -1 || response.data.data.ladoSemJogador != null)       //verificação se pode entrar em sala
-                  {       
-                    localStorage.setItem("ladoId", response.data.data.ladoSemJogador);
-                    let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0}
-                    await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)             //acessa endpoint de inclusão de jogador
-                      .then(response=>response)
-                        .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                    if(response.data.data.ladoSemJogador != -1 || response.data.data.ladoSemJogador != null)       //verificação se pode entrar em sala
+                    {       
+                      localStorage.setItem("ladoId", response.data.data.ladoSemJogador);
+                      let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0}
+                      await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)             //acessa endpoint de inclusão de jogador
+                        .then(response=>response)
+                          .then(json=> localStorage.setItem("ladoId",json.data.data.id));
 
-                    localStorage.setItem("acao", "entrada");
+                      localStorage.setItem("acao", "entrada");
+                    }
+                    else                                                          //caso sala esteja cheia
+                    {
+                      // mostra notificação de sala cheia
+                      this.$refs.toast.show({
+                        message: 'Sala cheia! Não é possível ter mais jogadores',
+                        type: 'error'
+                      }); 
+                      this.showPrincipal = true;
+                      this.resolvePromise(false); 
+                    }
+
+                    // mostra notificação de entrada na sala
+                      this.$refs.toast.show({
+                        message: 'Entrada na sala com sucesso',
+                        type: 'success'
+                      });
                   }
-                  else
-                  {
-                    alert("Sala cheia!")
-                  }
+                }            
+              );
 
-                  alert('Você entrou na sala ' + this.valueInput + '.');
-                }
-              }
-            );
-
-            this.resolvePromise(result);
+              this.resolvePromise(result);
+            }
+            catch(error)                                                       //caso não seja confirmado pelo back a entrada na sala
+            {
+              // mostra notificação de erro ao tentar entrar sala e retorna para iniciação
+              this.$refs.toast.show({
+                message: 'Erro ao entrar na sala',
+                type: 'error'
+              }); 
+              this.showPrincipal = true;
+              this.resolvePromise(false); 
+            }
           } 
           else                                                               //caso não seja confirmado entrar na sala 
           {
-            alert('Você decidiu não entrar na sala' + this.valueInput + '.');
             this.showPrincipal = true;
             this.valueInput = "";
             this.disabledButton = true;
