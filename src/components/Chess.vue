@@ -270,76 +270,69 @@
             }
         },
         mounted(){
-            // iniciar modal de iniciação ao carregar página
-            this.$refs.modalIniciacao.show().then((result) =>{
-                if(result){
-
-                    this.isModalIniciacaoVisible = false;
-                    
-                    if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
-                    
-                        this.$refs.modalChoosePiece.show({
-                            title: 'Escolha de cor das peças',
-                            message: 'Deseja qual cor de peça para iniciar o jogo?',
-                            type: 'create',
-                            codeRoom: undefined
-                        }).then( async (result) =>{
-                            if(result) {
-                                console.log(result);
-                                this.player = result;
-                                result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
-                                try
-                                {
-                                    await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
-                                        .then(response=>response)
-                                            .then(json=> localStorage.setItem("ladoId",json.data.data.id));
-                                    this.idGame = localStorage.getItem("idjogo");
-
-                                    // mostra notificação de sucesso ao criar sala
-                                    this.$refs.toast.show({
-                                        message: 'Criado jogo na sala de código ' + this.idGame,
-                                        type: 'success'
-                                    });
-                                }
-                                catch(error)
-                                {
-                                    // mostra notificação de erro ao escolher cor da peça
-                                    this.$refs.toast.show({
-                                        message: 'Erro ao criar sala (escolha de cor de peça)',
-                                        type: 'error'
-                                    });
-                                    this.isModalIniciacaoVisible = true;      
-                                }
-                                   
-                                localStorage.clear();
-                            }                              
-                            this.isModalChoosePieceVisible = false;
-                            console.log('inicial: ' + this.isModalIniciacaoVisible);
-                        }); 
-                        this.isModalChoosePieceVisible = true;
-                    }
-
-                    if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
-                    {
-                        this.playerconf.ladoId = localStorage.getItem("ladoId");
-                        this.playerconf.tipoId = 0;
-                        this.idGame = localStorage.getItem("idjogo");
-                        localStorage.clear();
-                    }
-                }
-            });
-            this.isModalIniciacaoVisible = true;
+            this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página
         },
         methods: { 
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
-            showModal() {
+            showModalIniciacao() {
+                // iniciar modal de iniciação ao carregar página
                 this.$refs.modalIniciacao.show().then((result) =>{
-                    console.log(result)
                     if(result){
-                        
+
                         this.isModalIniciacaoVisible = false;
+                        
+                        if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
+                        
+                            this.$refs.modalChoosePiece.show({
+                                title: 'Escolha de cor das peças',
+                                message: 'Deseja qual cor de peça para iniciar o jogo?',
+                                type: 'create',
+                                codeRoom: undefined
+                            }).then( async (result) =>{
+                                if(result) {
+                                    console.log(result);
+                                    this.player = result;
+                                    result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
+                                    try
+                                    {
+                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
+                                            .then(response=>response)
+                                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                        this.idGame = localStorage.getItem("idjogo");
+
+                                        // mostra notificação de sucesso ao criar sala
+                                        this.$refs.toast.show({
+                                            message: 'Criado jogo na sala de código ' + this.idGame,
+                                            type: 'success'
+                                        });
+                                    }
+                                    catch(error)
+                                    {
+                                        // mostra notificação de erro ao escolher cor da peça
+                                        this.$refs.toast.show({
+                                            message: 'Erro ao criar sala (escolha de cor de peça)',
+                                            type: 'error'
+                                        });
+                                        this.isModalIniciacaoVisible = true;      
+                                    }
+                                    
+                                    localStorage.clear();
+                                }                              
+                                this.isModalChoosePieceVisible = false;
+                                console.log('inicial: ' + this.isModalIniciacaoVisible);
+                            }); 
+                            this.isModalChoosePieceVisible = true;
+                        }
+
+                        if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
+                        {
+                            this.playerconf.ladoId = localStorage.getItem("ladoId");
+                            this.playerconf.tipoId = 0;
+                            this.idGame = localStorage.getItem("idjogo");
+                            localStorage.clear();
+                        }
                     }
-                })
+                });
                 this.isModalIniciacaoVisible = true;
             },
             showResult() {
