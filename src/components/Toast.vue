@@ -34,7 +34,6 @@
             },
 
             getClass(){
-                console.log('getClass')
                 if(this.type == "error"){
                     return 'toast-error';
                 }

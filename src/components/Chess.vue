@@ -246,6 +246,9 @@
     import modalResultado from "./Modal-resultado";
     import toast from "./Toast";
     import http from './config/Http';
+    import io from 'socket.io-client';
+
+    
 
     import axios from "axios";
     
@@ -265,18 +268,49 @@
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
                 idGame: undefined,
+                gameMode: undefined,
                 previouspos: "",
-                playerconf:{ladoId:0, tipoId:0}
+                playerconf:{ladoId:0, tipoId:0}, 
+                playerId: undefined
             }
         },
+        destroyed(){
+            this.socket.on("disconnect");
+        },
         mounted(){
+            this.playerId = Date.now();           
+            this.socket = io("http://localhost:3333/", {query:"jogador="+ this.playerId});
+            this.socket.on("connect", () => {
+                // either with send()
+                console.log("Socket conectado:" + this.socket.id);
+                console.log(this.socket);
+
+                this.socket.on('jogoCriado', (data) => {
+                    console.log('Jogo criado: ' + data);
+                });
+
+                this.socket.on('entraJogador', () =>{
+                    if(localStorage.getItem("tipoJogo") == 0){
+                        console.log('Espera pelo adversário');
+                        this.isModalResultadoVisible = true;
+                    }
+                    console.log('Inicia jogo');
+                })
+
+                this.socket.on('adversarioEntrou', () =>{
+                    this.isModalResultadoVisible = false;
+                })
+            });
+
             this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página
+            
         },
         methods: { 
+
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModalIniciacao() {
                 // iniciar modal de iniciação ao carregar página
-                this.$refs.modalIniciacao.show().then((result) =>{
+                this.$refs.modalIniciacao.show(this.playerId).then((result) =>{
                     if(result){
 
                         this.isModalIniciacaoVisible = false;
@@ -290,7 +324,6 @@
                                 codeRoom: undefined
                             }).then( async (result) =>{
                                 if(result) {
-                                    console.log(result);
                                     this.player = result;
                                     result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
                                     try
@@ -299,6 +332,7 @@
                                             .then(response=>response)
                                                 .then(json=> localStorage.setItem("ladoId",json.data.data.id));
                                         this.idGame = localStorage.getItem("idjogo");
+                                        this.gameMode = localStorage.getItem("tipoJogo");
 
                                         // mostra notificação de sucesso ao criar sala
                                         this.$refs.toast.show({
@@ -319,7 +353,6 @@
                                     localStorage.clear();
                                 }                              
                                 this.isModalChoosePieceVisible = false;
-                                console.log('inicial: ' + this.isModalIniciacaoVisible);
                             }); 
                             this.isModalChoosePieceVisible = true;
                         }
@@ -329,6 +362,7 @@
                             this.playerconf.ladoId = localStorage.getItem("ladoId");
                             this.playerconf.tipoId = 0;
                             this.idGame = localStorage.getItem("idjogo");
+                            this.gameMode = localStorage.getItem("tipoJogo");
                             localStorage.clear();
                         }
                     }

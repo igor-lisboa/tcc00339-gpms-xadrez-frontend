@@ -65,13 +65,15 @@
         isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
         gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
         resolvePromise: undefined,              // variável para retorno das informações do modal
-        rejectPromise: undefined                // variável para retorno das informações do modal
+        rejectPromise: undefined,               // variável para retorno das informações do modal
+        playerId: undefined                     // variável identificadora de jogador
       }
     },
     methods: {
 
       // função de criação do modal de inicição
-      show() {
+      show(playerId) {
+        this.playerId = playerId,
         this.showPrincipal = true;
         this.valueInput = "";
         this.disabledButton = true;
@@ -107,12 +109,14 @@
           if (result)                                          //caso seja confirmado criação da sala
           { 
             try
-            {                                             
-              await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
+            {   
+              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode, "jogadorId": this.playerId})                  //acessa endpoint de criação de sala
                 .then( response => response)
-                  .then(data=> {console.log(data);
-                    localStorage.setItem("idjogo",data.data.data.id)
+                  .then(data=>{
+                    localStorage.setItem("idjogo",data.data.data.id);
+                    localStorage.setItem("tipoJogo", this.gameMode);
                   });
+              
             }
             catch(error)
             {
@@ -156,16 +160,15 @@
           {
             try
             {
-              await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
+              http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
                 .then(async (response) =>{
                   if(response.status==200){
-                    
-                    localStorage.setItem("idjogo", response.data.data.id);
 
                     if(response.data.data.ladoSemJogador != -1 || response.data.data.ladoSemJogador != null)       //verificação se pode entrar em sala
-                    {       
+                    {     
+                      localStorage.setItem("idjogo", response.data.data.id);  
                       localStorage.setItem("ladoId", response.data.data.ladoSemJogador);
-                      let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0}
+                      let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0, jogadorId: this.jogadorId};
                       await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)             //acessa endpoint de inclusão de jogador
                         .then(response=>response)
                           .then(json=> localStorage.setItem("ladoId",json.data.data.id));
