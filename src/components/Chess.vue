@@ -1,7 +1,7 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
             <!-- código do botão terá q sair futuramente -->
             <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
@@ -116,11 +116,12 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
         <toast ref="toast"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
             <!-- código do botão terá q sair futuramente -->
              <button @click="showResult">Mostrar resultado</button>
             <div class="horizontal-position">
@@ -236,6 +237,7 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
         <toast ref="toast"/>
     </div>
 </template>
@@ -244,6 +246,7 @@
     import modalIniciacao from "./Modal-iniciacao";
     import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
+    import modalWait from "./Modal-wait";
     import toast from "./Toast";
     import http from './config/Http';
     import io from 'socket.io-client';
@@ -258,6 +261,7 @@
             modalIniciacao,
             modalChoosePiece, 
             modalResultado,
+            modalWait,
             toast 
         },
         data () {
@@ -267,6 +271,7 @@
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
+                isModalWaitVisible: false,
                 idGame: undefined,
                 gameMode: undefined,
                 previouspos: "",
@@ -283,22 +288,22 @@
             this.socket.on("connect", () => {
                 // either with send()
                 console.log("Socket conectado:" + this.socket.id);
-                console.log(this.socket);
 
                 this.socket.on('jogoCriado', (data) => {
                     console.log('Jogo criado: ' + data);
                 });
 
-                this.socket.on('entraJogador', () =>{
+                this.socket.on('jogador1Entrou', () =>{
                     if(localStorage.getItem("tipoJogo") == 0){
                         console.log('Espera pelo adversário');
-                        this.isModalResultadoVisible = true;
+                        this.$refs.modalWait.show(localStorage.getItem("idjogo"));
+                        this.isModalWaitVisible = true;
                     }
                     console.log('Inicia jogo');
                 })
 
                 this.socket.on('adversarioEntrou', () =>{
-                    this.isModalResultadoVisible = false;
+                    this.isModalWaitVisible = false;
                 })
             });
 
@@ -326,9 +331,10 @@
                                 if(result) {
                                     this.player = result;
                                     result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
+                                    let playerconf = {ladoId:this.playerconf.ladoId, tipoId:0, jogadorId: this.playerId};
                                     try
                                     {
-                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
+                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)         //chama endpoint de escolha de peça
                                             .then(response=>response)
                                                 .then(json=> localStorage.setItem("ladoId",json.data.data.id));
                                         this.idGame = localStorage.getItem("idjogo");
