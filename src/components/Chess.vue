@@ -1,10 +1,9 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
             <!-- código do botão terá q sair futuramente -->
-            <button @click="showModal">Mostrar modal iniciação</button>
-            <button @click="showResult">Mostrar resultado</button>
+            <!-- <button @click="showResult">Mostrar resultado</button> -->
             <div class="horizontal-position">
                 <div>8</div>
                 <div>7</div>
@@ -107,6 +106,16 @@
                     <div id="H1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
                 </div>
             </div>
+            <div class="turn">
+                <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
+                    <div class="centered" :class="{'black':  this.blackTurn}">
+                        <h3 v-if="this.turn">Sua vez</h3>
+                        <h3 v-else>Vez do adversário</h3>
+                        <span v-if="this.turn">Realize sua jogada</span>
+                        <span v-else>Espere sua vez de jogar</span>
+                    </div> 
+                </div>
+            </div>
         </div>
         <modal-iniciacao
             ref="modalIniciacao"
@@ -117,13 +126,14 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
+        <toast ref="toast"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible}">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
             <!-- código do botão terá q sair futuramente -->
-            <button @click="showModal">Mostrar modal iniciação</button>
-             <button @click="showResult">Mostrar resultado</button>
+            <!-- <button @click="showResult">Mostrar resultado</button> -->
             <div class="horizontal-position">
                 <div>1</div>
                 <div>2</div>
@@ -227,6 +237,16 @@
                     <div id="H8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                 </div>   
             </div>
+            <div class="turn">
+                <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
+                    <div class="centered" :class="{'black':  this.blackTurn}">
+                        <h3 v-if="this.turn">Sua vez</h3>
+                        <h3 v-else>Vez do adversário</h3>
+                        <span v-if="this.turn">Realize sua jogada</span>
+                        <span v-else>Espere sua vez de jogar</span>
+                    </div> 
+                </div>
+            </div>
         </div>
         <modal-iniciacao
             ref="modalIniciacao"
@@ -237,6 +257,8 @@
             v-show="isModalChoosePieceVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
+        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
+        <toast ref="toast"/>
     </div>
 </template>
 
@@ -244,14 +266,23 @@
     import modalIniciacao from "./Modal-iniciacao";
     import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
-    import axios from 'axios';
+    import modalWait from "./Modal-wait";
+    import toast from "./Toast";
+    import http from './config/Http';
+    import io from 'socket.io-client';
+
+    
+
+    import axios from "axios";
     
     export default {
         name: 'Chess',
         components: { 
             modalIniciacao,
             modalChoosePiece, 
-            modalResultado 
+            modalResultado,
+            modalWait,
+            toast 
         },
         data () {
             return {
@@ -260,49 +291,132 @@
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
-                previouspos: ""
+                isModalWaitVisible: false,
+                idGame: undefined,
+                gameMode: undefined,
+                previouspos: "",
+                playerconf:{ladoId:0, tipoId:0}, 
+                playerId: undefined,
+                turn: undefined,
+                blackTurn: false
             }
         },
+        destroyed(){
+            this.socket.on("disconnect");
+        },
         mounted(){
-            // iniciar modal de iniciação ao carregar página
-            this.$refs.modalIniciacao.show().then((result) =>{
-                if(result){
-                    this.isModalIniciacaoVisible = false;
-                        
-                        this.$refs.modalChoosePiece.show({
-                            title: 'Escolha de cor das peças',
-                            message: 'Deseja qual cor de peça para iniciar o jogo?',
-                            type: 'create',
-                            codeRoom: undefined
-                        }).then((result) =>{
-                            
-                            if(result)
-                            console.log(result);
-                            this.player = result;
-
-                            this.isModalChoosePieceVisible = false;
-                        }); 
-                        this.isModalChoosePieceVisible = true;
-                }
-            });
-            this.isModalIniciacaoVisible = true;
+            this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página    
         },
         methods: { 
+
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
-            showModal() {
-                this.$refs.modalIniciacao.show().then((result) =>{
-                    console.log(result)
+            showModalIniciacao() {
+
+                this.$refs.modalIniciacao.show(this.playerId).then(async(result) =>{
                     if(result){
-                        
+
                         this.isModalIniciacaoVisible = false;
+                        
+                        if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
+                        
+                            this.$refs.modalChoosePiece.show({
+                                title: 'Escolha de cor das peças',
+                                message: 'Deseja qual cor de peça para iniciar o jogo?',
+                                type: 'create',
+                                codeRoom: undefined
+                            }).then( async (result) =>{
+                                if(result) {
+
+                                    this.player = result;
+                                    result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
+                                    this.turn = result == "branco" ? true : false;
+
+                                    try
+                                    {
+                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
+                                            .then(response=>response)
+                                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                        this.idGame = localStorage.getItem("idjogo");
+                                        this.gameMode = localStorage.getItem("tipoJogo");
+
+                                        this.createSocket();                                                            //iniciar socket jogoId-lado
+
+                                        // mostra notificação de sucesso ao criar sala
+                                        this.$refs.toast.show({
+                                            message: 'Criado jogo na sala de código ' + this.idGame,
+                                            type: 'success'
+                                        });
+
+                                        if(this.gameMode == 0){
+                                            console.log('Espera pelo adversário');
+                                            this.$refs.modalWait.show(this.idGame);
+                                            this.isModalWaitVisible = true;
+                                        }
+                                        console.log('Inicia jogo');
+                                    }
+                                    catch(error)
+                                    {
+                                        // mostra notificação de erro ao escolher cor da peça
+                                        this.$refs.toast.show({
+                                            message: 'Erro ao criar sala (escolha de cor de peça)',
+                                            type: 'error'
+                                        });
+                                        this.isModalIniciacaoVisible = true;      
+                                    }
+                                    
+                                    localStorage.clear();
+                                }                              
+                                this.isModalChoosePieceVisible = false;
+                            }); 
+                            this.isModalChoosePieceVisible = true;
+                        }
+
+                        if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
+                        {
+                            let result = localStorage.getItem("ladoId")==0 ? "branco" : "preto"; 
+                            this.player = result;
+                            this.turn = result == "branco" ? true : false;
+
+                            this.playerconf.ladoId = localStorage.getItem("ladoId");
+                            this.playerconf.tipoId = 0;
+                          
+                            //let playerconf = {ladoId: localStorage.getItem("ladoId"), tipoId:0, jogadorId: this.jogadorId};
+                            try{
+                            await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
+                                .then(response=>response)
+                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                            }catch(error){
+                                // mostra notificação de entrada na sala
+                                this.$refs.toast.show({
+                                    message: 'Erro ao entrar na sala',
+                                    type: 'error'
+                                });
+                            }
+
+                            //função de iniciar socket jogoId-lado
+                            this.idGame = localStorage.getItem("idjogo");
+                            this.gameMode = localStorage.getItem("tipoJogo");
+                            localStorage.clear();
+
+                            // mostra notificação de entrada na sala
+                            this.$refs.toast.show({
+                                message: 'Entrada na sala com sucesso',
+                                type: 'success'
+                            });
+
+                            this.createSocket();                                                            //iniciar socket jogoId-lado
+                        }
                     }
-                })
+                });
                 this.isModalIniciacaoVisible = true;
             },
             showResult() {
-                console.log("cliquei")
-                // this.$refs.modalResultado.gameResult({ result: 'win' });
-                this.isModalResultadoVisible = true;
+                const result = 'win';
+
+                this.$refs.modalResultado.gameResult({ result }).then((response) =>{
+                    if(response) this.isModalResultadoVisible = true;
+                    else this.isModalResultadoVisible = false;
+                });
             },
             //função de gerenciamento da escolha de peça
             getPosition:function(ev){
@@ -316,12 +430,20 @@
                         this.movePhase = true;
                         jogada.posicao = pos ;
                         // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
-                        axios.get("http://localhost:3333/jogos/0/pecas/"+pos+"/possiveis-jogadas").then(response => response.json()
+                        var config = {
+                                method: 'get',
+                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+pos+'/possiveis-jogadas',
+                                headers: { 
+                                    'lado': this.playerconf.ladoId
+                                }
+                                };
+                        axios(config).then(response => response
                         ).then(
                             json => {
+                                console.log("data"+json.data.data);
                                 if(json.data != null){
-                                    json.data.forEach(this.paintNextPos)
-                                    localStorage.setItem("positions",JSON.stringify(json.data))
+                                    json.data.data.forEach(this.paintNextPos)
+                                    localStorage.setItem("positions",JSON.stringify(json.data.data))
                                 }
                             } 
                         ).then(localStorage.setItem("jogada",JSON.stringify(jogada))); 
@@ -333,7 +455,14 @@
                     let actualPos = ev.target.id ;
                     document.getElementById(this.previouspos).style.backgroundImage = "";
                     ev.target.style.backgroundImage = jogada.peca;
-                    axios.post("http://localhost:3333/jogos/0/pecas/"+this.previouspos +"/move/"+ actualPos).then((response)=>console.log(response.json()))
+                     config = {
+                                method: 'post',
+                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+this.previouspos +'/move/'+ actualPos,
+                                headers: { 
+                                    'lado': localStorage.getItem("ladoId")
+                                }
+                                };
+                    axios(config).then(response=>console.log("esse"+response)).then(console.log("foi")).catch(error=>console.log(error))
                     var pos=localStorage.getItem("positions")
                     pos= JSON.parse(pos)
                     
@@ -354,6 +483,21 @@
                  document.getElementById(item.casa.casa).classList.remove("greenie");
                  
                  this.movePhase = false;
+            },
+
+            //criação do socket
+            createSocket: function(){
+                this.playerId = Date.now();           
+            this.socket = io("http://localhost:3333/", {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket.on("connect", () => {
+                // either with send()
+                console.log("Socket conectado:" + this.socket.id);
+
+                this.socket.on('adversarioEntrou', () =>{
+                    this.isModalWaitVisible = false;
+                })
+            });
+
             }
         }
     }
@@ -364,34 +508,36 @@
         box-sizing: border-box; 
         -webkit-box-sizing: border-box; 
         -moz-box-sizing: border-box; 
-        -o-box-sizing: border-box;  
+        -o-box-sizing: border-box; 
+        overflow: hidden; 
     }
 
     .containerFull {
-        margin: 0 auto;
-        width: 600px;
-        margin: 0 auto;
-        margin-top: 5px
+        width: 100%;
+        margin-top: 5px;
+        
     }
 
     /******** Indicação das casas no tabuleiro ********/
     .vertical-position {
-        float: left;
+        float: right;
         text-align: center;
         font-size: 2em;
         justify-content: space-between;
         display: flex;
+        margin-left: 22%;
+        position: absolute;
     }
     .vertical-position div
     {
-        float: left;
+        float: right;
         width: 82px;
     }
     .horizontal-position
     {
-        position:absolute;
-        margin-left: -30px;
-        margin-top:62px;
+        position: absolute;
+        margin-left: 20%;
+        margin-top: 62px;
         font-size: 2em;
         text-align: center;
     }
@@ -411,7 +557,10 @@
         height: 662px;
         border-radius: 5px;
         cursor: pointer;
-        float: left;
+        float: right;
+        position: absolute;
+        margin-top: 40px;
+        margin-left: 22%;
     }
     .row {
         clear: both;
@@ -452,5 +601,55 @@
     /********************* demais estilos ***********************/
     .blur-content{
         filter: blur(5px); 
+    }
+
+    /****************** card de turno ************************/
+    .turn{
+        float: right;
+        text-align: center;
+        font-size: 2em;
+        justify-content: space-between;
+        display: flex;
+        margin-left: 70%;
+        position: absolute;
+        width: 25%;
+        height: 0;
+        padding-bottom: 38%;
+    }
+    .turn-square{
+        position: absolute;
+        text-align: center;
+        width: 100%;
+        height: 25%;
+        border-radius: 5px;
+    }
+    .turn-square:before {
+        display: inline-block;
+        height: 10%; 
+        vertical-align: middle;
+        margin-right: -0.25em;
+    }
+    .my-turn{
+        border: 3px solid #009e1b;
+    }
+    .opponent-turn{
+        border: 5px solid #ce0303;
+    }
+    
+    .centered {
+        display: inline-block;
+        vertical-align: middle;
+        width: 100%;
+        height: 100%;
+    }
+    .centered h3,
+    .centered span
+    {
+        margin: 5%;
+    }
+    .black
+    {
+        color: #ffff;
+        background-color:#000;
     }
 </style>
