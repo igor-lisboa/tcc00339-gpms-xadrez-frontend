@@ -283,39 +283,14 @@
             this.socket.on("disconnect");
         },
         mounted(){
-            this.playerId = Date.now();           
-            this.socket = io("http://localhost:3333/", {query:"jogador="+ this.playerId});
-            this.socket.on("connect", () => {
-                // either with send()
-                console.log("Socket conectado:" + this.socket.id);
-
-                this.socket.on('jogoCriado', (data) => {
-                    console.log('Jogo criado: ' + data);
-                });
-
-                this.socket.on('jogador1Entrou', () =>{
-                    if(localStorage.getItem("tipoJogo") == 0){
-                        console.log('Espera pelo adversário');
-                        this.$refs.modalWait.show(localStorage.getItem("idjogo"));
-                        this.isModalWaitVisible = true;
-                    }
-                    console.log('Inicia jogo');
-                })
-
-                this.socket.on('adversarioEntrou', () =>{
-                    this.isModalWaitVisible = false;
-                })
-            });
-
-            this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página
-            
+            this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página    
         },
         methods: { 
 
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModalIniciacao() {
-                // iniciar modal de iniciação ao carregar página
-                this.$refs.modalIniciacao.show(this.playerId).then((result) =>{
+
+                this.$refs.modalIniciacao.show(this.playerId).then(async(result) =>{
                     if(result){
 
                         this.isModalIniciacaoVisible = false;
@@ -329,22 +304,32 @@
                                 codeRoom: undefined
                             }).then( async (result) =>{
                                 if(result) {
+
                                     this.player = result;
                                     result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
-                                    let playerconf = {ladoId:this.playerconf.ladoId, tipoId:0, jogadorId: this.playerId};
+
                                     try
                                     {
-                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)         //chama endpoint de escolha de peça
+                                        await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
                                             .then(response=>response)
                                                 .then(json=> localStorage.setItem("ladoId",json.data.data.id));
                                         this.idGame = localStorage.getItem("idjogo");
                                         this.gameMode = localStorage.getItem("tipoJogo");
+
+                                        this.createSocket();                                                            //iniciar socket jogoId-lado
 
                                         // mostra notificação de sucesso ao criar sala
                                         this.$refs.toast.show({
                                             message: 'Criado jogo na sala de código ' + this.idGame,
                                             type: 'success'
                                         });
+
+                                        if(this.gameMode == 0){
+                                            console.log('Espera pelo adversário');
+                                            this.$refs.modalWait.show(this.idGame);
+                                            this.isModalWaitVisible = true;
+                                        }
+                                        console.log('Inicia jogo');
                                     }
                                     catch(error)
                                     {
@@ -365,11 +350,37 @@
 
                         if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
                         {
+                            let result = localStorage.getItem("ladoId")==0 ? "branco" : "preto"; 
+                            this.player = result;
+
                             this.playerconf.ladoId = localStorage.getItem("ladoId");
                             this.playerconf.tipoId = 0;
+                          
+                            //let playerconf = {ladoId: localStorage.getItem("ladoId"), tipoId:0, jogadorId: this.jogadorId};
+                            try{
+                            await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
+                                .then(response=>response)
+                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                            }catch(error){
+                                // mostra notificação de entrada na sala
+                                this.$refs.toast.show({
+                                    message: 'Erro ao entrar na sala',
+                                    type: 'error'
+                                });
+                            }
+
+                            //função de iniciar socket jogoId-lado
                             this.idGame = localStorage.getItem("idjogo");
                             this.gameMode = localStorage.getItem("tipoJogo");
                             localStorage.clear();
+
+                            // mostra notificação de entrada na sala
+                            this.$refs.toast.show({
+                                message: 'Entrada na sala com sucesso',
+                                type: 'success'
+                            });
+
+                            this.createSocket();                                                            //iniciar socket jogoId-lado
                         }
                     }
                 });
@@ -448,6 +459,21 @@
                  document.getElementById(item.casa.casa).classList.remove("greenie");
                  
                  this.movePhase = false;
+            },
+
+            //criação do socket
+            createSocket: function(){
+                this.playerId = Date.now();           
+            this.socket = io("http://localhost:3333/", {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket.on("connect", () => {
+                // either with send()
+                console.log("Socket conectado:" + this.socket.id);
+
+                this.socket.on('adversarioEntrou', () =>{
+                    this.isModalWaitVisible = false;
+                })
+            });
+
             }
         }
     }

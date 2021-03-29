@@ -160,19 +160,16 @@
           {
             try
             {
-              http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
+              await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
                 .then(async (response) =>{
                   if(response.status==200){
 
-                    if(response.data.data.ladoSemJogador != -1 || response.data.data.ladoSemJogador != null)       //verificação se pode entrar em sala
-                    {     
-                      localStorage.setItem("idjogo", response.data.data.id);  
-                      localStorage.setItem("ladoId", response.data.data.ladoSemJogador);
-                      let playerconf = {ladoId: response.data.data.ladoSemJogador, tipoId:0, jogadorId: this.jogadorId};
-                      await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",playerconf)             //acessa endpoint de inclusão de jogador
-                        .then(response=>response)
-                          .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                    let ladoSemJogador = this.getLadoSemJogador(response.data.data);
 
+                    if(ladoSemJogador != -1 || ladoSemJogador != null)       //verificação se pode entrar em sala
+                    {     
+                      localStorage.setItem("idjogo", this.valueInput);  
+                      localStorage.setItem("ladoId", ladoSemJogador);
                       localStorage.setItem("acao", "entrada");
                     }
                     else                                                          //caso sala esteja cheia
@@ -186,11 +183,15 @@
                       this.resolvePromise(false); 
                     }
 
-                    // mostra notificação de entrada na sala
-                      this.$refs.toast.show({
-                        message: 'Entrada na sala com sucesso',
-                        type: 'success'
-                      });
+                  }
+                  if(response.status==500){
+                    // mostra notificação de erro ao tentar entrar sala e retorna para iniciação
+                    this.$refs.toast.show({
+                      message: 'Sala não encontrada',
+                      type: 'error'
+                    }); 
+                    this.showPrincipal = true;
+                    this.resolvePromise(false); 
                   }
                 }            
               );
@@ -201,7 +202,7 @@
             {
               // mostra notificação de erro ao tentar entrar sala e retorna para iniciação
               this.$refs.toast.show({
-                message: 'Erro ao entrar na sala',
+                message: 'Sala não encontrada',
                 type: 'error'
               }); 
               this.showPrincipal = true;
@@ -219,6 +220,24 @@
 
         this.showPrincipal = false;
         this.isConfirmationVisible = true;
+      },
+
+      getLadoSemJogador(data){
+        let ladoBranco = data.ladoBranco.tipo;
+        let ladoPreto = data.ladoPreto.tipo;
+        if(ladoPreto == null){
+          if(ladoBranco == null){
+            return null;
+          }
+          return 1;                      //retorna lado preto sem jogador
+        }
+        else
+        {
+          if(ladoBranco == null){
+            return 0;                   //retorna lado branco sem jogador
+          }
+          return -1;                    //retorna que não hpa lado sem jogador
+        }
       }
     }
   };
