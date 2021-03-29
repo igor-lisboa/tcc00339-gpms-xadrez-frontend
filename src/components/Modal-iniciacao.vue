@@ -23,9 +23,9 @@
             <div class="new-game">
                 <label>Iniciar novo jogo: </label>
                 <div>
-                    <input type="radio" name="optJogo" value="JxJ" checked> JxJ
-                    <input type="radio" name="optJogo" value="JxIA"> JxIA
-                    <input type="radio" name="optJogo" value="IAxIA"> IAxIA
+                    <input type="radio" name="optJogo" value="0" checked> JxJ
+                    <input type="radio" name="optJogo" value="1"> JxIA
+                    <input type="radio" name="optJogo" value="2"> IAxIA
                   <button @click="criarSala">Iniciar agora</button>
                 </div>
             </div>
@@ -41,35 +41,39 @@
     </div>
   </transition>
   <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible"/>
-
+  <toast ref="toast"/>
   </div>
 </template>
 
 <script>
   import modalConfirmation from "./Modal-confirmation";
-   
+  import toast from "./Toast";
+  import http from './config/Http';
+  
   export default {
     name: 'modalIniciacao',
     components: { 
-      modalConfirmation
+      modalConfirmation,
+      toast
     },
     data () {
       return {
-        showPrincipal: Boolean,
-        valueInput: "",
-        disabledButton: true,
-        isConfirmationVisible: false,
-        isChoosePieceVisible :false,
-        resolvePromise: undefined,
-        rejectPromise: undefined
+        showPrincipal: Boolean,                 // variável que indica se modal de iniciação deve ser visível
+        valueInput: "",                         // valor do campo que possui código da sala
+        disabledButton: true,                   // variável que indica se botão deve ser desabilitado
+        isConfirmationVisible: false,           // variável que indica se o modal de confiramção deve ser visível
+        isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
+        gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
+        resolvePromise: undefined,              // variável para retorno das informações do modal
+        rejectPromise: undefined,               // variável para retorno das informações do modal
+        playerId: undefined                     // variável identificadora de jogador
       }
     },
     methods: {
-      close() {
-        this.$emit('close');
-      },
+
       // função de criação do modal de inicição
-      show() {
+      show(playerId) {
+        this.playerId = playerId,
         this.showPrincipal = true;
         this.valueInput = "";
         this.disabledButton = true;
@@ -78,60 +82,162 @@
           this.rejectPromise = reject;
         })
       },
+
       // função de evento de keyup do input de códgio de sala
       keyupInput($event) {
         this.valueInput = $event.target.value;
-        if(this.valueInput != ""){
+
+        if(this.valueInput != ""){                           // habilita o botão se houver se for informado um código de sala
           this.disabledButton = false;
           return;
         }
           this.disabledButton = true;
       },
       
+      //função de criação de sala
       async criarSala() {
         console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+        this.gameMode = document.querySelectorAll("input[name=optJogo]:checked")[0].value;
 
+        //aciona modal de confirmação
         this.$refs.modalConfirmation.show({
           title: 'Criação de sala',
           message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',
-          type: 'create',
-          codeRoom: undefined
-        }).then((result) =>{
-          if (result) {
-            alert('Você criou uma sala.');
-            this.resolvePromise(result);
-          } else {
-            alert('Você decidiu não criar uma sala.');
+          type: 'create'
+        }).then(async (result) =>{ 
+
+          if (result)                                          //caso seja confirmado criação da sala
+          { 
+            try
+            {   
+              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode, "jogadorId": this.playerId})                  //acessa endpoint de criação de sala
+                .then( response => response)
+                  .then(data=>{
+                    localStorage.setItem("idjogo",data.data.data.id);
+                    localStorage.setItem("tipoJogo", this.gameMode);
+                  });
+              
+            }
+            catch(error)
+            {
+              // mostra notificação de erro ao tentar criar sala e retorna para iniciação
+              this.$refs.toast.show({
+                message: 'Erro ao criar a sala',
+                type: 'error'
+              });
+              this.showPrincipal = true;
+              this.resolvePromise(false);
+            }
+
+            localStorage.setItem("acao", "criacao");
+            this.resolvePromise(result); 
+
+          }
+          else                                               //caso não seja confirmado pelo back a criação da sala
+          {                                                   
             this.showPrincipal = true;
           }
           this.isConfirmationVisible = false;
-        })
+        });
+
         this.showPrincipal = false;
         this.isConfirmationVisible = true;
       },
+
       //função para entrar numa sala de jogo
       entrarSala() {
         console.log( "Selecionado entrar na sala: " + this.valueInput);
 
+        //aciona modal de confirmação
         this.$refs.modalConfirmation.show({
           title: 'Entrar em sala',
           message: 'Deseja realmente entrar na sala ' + this.valueInput + ' para iniciar um jogo?',
           type: 'enter',
           codeRoom: this.valueInput
-        }).then((result) =>{
-          if (result) {
-            alert('Você entrou na sala ' + this.valueInput + '.');
-            this.resolvePromise(result);
-          } else {
-            alert('Você decidiu não entrar na sala' + this.valueInput + '.');
+        }).then(async (result) =>{
+
+          if (result)                                                      //caso seja confirmado entrar na sala
+          {
+            try
+            {
+              await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
+                .then(async (response) =>{
+                  if(response.status==200){
+
+                    let ladoSemJogador = this.getLadoSemJogador(response.data.data);
+
+                    if(ladoSemJogador != -1 || ladoSemJogador != null)       //verificação se pode entrar em sala
+                    {     
+                      localStorage.setItem("idjogo", this.valueInput);  
+                      localStorage.setItem("ladoId", ladoSemJogador);
+                      localStorage.setItem("acao", "entrada");
+                    }
+                    else                                                          //caso sala esteja cheia
+                    {
+                      // mostra notificação de sala cheia
+                      this.$refs.toast.show({
+                        message: 'Sala cheia! Não é possível ter mais jogadores',
+                        type: 'error'
+                      }); 
+                      this.showPrincipal = true;
+                      this.resolvePromise(false); 
+                    }
+
+                  }
+                  if(response.status==500){
+                    // mostra notificação de erro ao tentar entrar sala e retorna para iniciação
+                    this.$refs.toast.show({
+                      message: 'Sala não encontrada',
+                      type: 'error'
+                    }); 
+                    this.showPrincipal = true;
+                    this.resolvePromise(false); 
+                  }
+                }            
+              );
+
+              this.resolvePromise(result);
+            }
+            catch(error)                                                       //caso não seja confirmado pelo back a entrada na sala
+            {
+              // mostra notificação de erro ao tentar entrar sala e retorna para iniciação
+              this.$refs.toast.show({
+                message: 'Sala não encontrada',
+                type: 'error'
+              }); 
+              this.showPrincipal = true;
+              this.resolvePromise(false); 
+            }
+          } 
+          else                                                               //caso não seja confirmado entrar na sala 
+          {
             this.showPrincipal = true;
             this.valueInput = "";
             this.disabledButton = true;
           }
           this.isConfirmationVisible = false;
         });
+
         this.showPrincipal = false;
         this.isConfirmationVisible = true;
+      },
+
+      getLadoSemJogador(data){
+        let ladoBranco = data.ladoBranco.tipo;
+        let ladoPreto = data.ladoPreto.tipo;
+        if(ladoPreto == null){
+          if(ladoBranco == null){
+            return null;
+          }
+          return 1;                      //retorna lado preto sem jogador
+        }
+        else
+        {
+          if(ladoBranco == null){
+            return 0;                   //retorna lado branco sem jogador
+          }
+          return -1;                    //retorna que não hpa lado sem jogador
+        }
       }
     }
   };
