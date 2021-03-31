@@ -94,7 +94,6 @@
       
       //função de criação de sala
       async criarSala() {
-        console.log( "Selecionado modo de jogo: " + document.querySelectorAll("input[name=optJogo]:checked")[0].value);
         this.gameMode = document.querySelectorAll("input[name=optJogo]:checked")[0].value;
 
         //aciona modal de confirmação
@@ -144,7 +143,6 @@
 
       //função para entrar numa sala de jogo
       entrarSala() {
-        console.log( "Selecionado entrar na sala: " + this.valueInput);
 
         //aciona modal de confirmação
         this.$refs.modalConfirmation.show({

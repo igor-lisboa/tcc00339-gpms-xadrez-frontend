@@ -347,11 +347,10 @@
                                         });
 
                                         if(this.gameMode == 0){
-                                            console.log('Espera pelo adversário');
                                             this.$refs.modalWait.show(this.idGame);
                                             this.isModalWaitVisible = true;
                                         }
-                                        console.log('Inicia jogo');
+
                                     }
                                     catch(error)
                                     {
@@ -445,7 +444,6 @@
                     
                     this.jogada.posicaoPrevia = ev.target.id 
                     
-                    //let jogada = {posicao:"", peca:""};
                     this.jogada.peca = ev.target.style.backgroundImage;
                     this.jogada.posicao = ev.target.id;
                          
@@ -453,7 +451,6 @@
                     await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response
                     ).then(
                         json => {
-                            console.log("data" + json.data.data);
                             if(json.data != null){
                                 json.data.data.forEach(this.paintNextPos);
                                 this.jogada.posicoes = JSON.stringify(json.data.data);
@@ -480,7 +477,6 @@
                         await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response
                         ).then(
                             json => {
-                                console.log("data" + json.data.data);
                                 if(json.data != null){
                                     json.data.data.forEach(this.paintNextPos);
                                     this.jogada.posicoes = JSON.stringify(json.data.data);
@@ -500,10 +496,7 @@
                     document.getElementById(this.jogada.posicaoPrevia).style.backgroundImage = "";
                     ev.target.style.backgroundImage = this.jogada.peca;
                     await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
-                        .then( response => response)
-                            .then(data=> {
-                                console.log(data)
-                            });
+                        .then( response => response);
                     let pos = JSON.parse(this.jogada.posicoes)
                     
                     if(this.removePaint != null){
@@ -517,7 +510,6 @@
 
             // função para pintar as casas onde a peça pode ser movida
             paintNextPos:function(item){
-                console.log(item.casa)
                 
                 if(document.getElementById(item.casa.casa).style.backgroundImage != "" ){
                     document.getElementById(item.casa.casa).classList.add("catch");
@@ -539,8 +531,6 @@
             createSocket: function(){          
             this.socket = io("http://localhost:3333/", {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
             this.socket.on("connect", () => {
-
-                console.log("Socket conectado:" + this.socket.id);
 
                 this.socket.on('adversarioEntrou', () =>{
                     this.isModalWaitVisible = false;
