@@ -33,7 +33,7 @@
                 <label>Entrar em um jogo:</label>
                 <div>
                   <input placeholder="Código da sala" @keyup="keyupInput($event)" v-model="valueInput">
-                  <button :class="{'disabled': this.disabledButton}" @click="entrarSala">Entrar</button>
+                  <button :class="{'disabled': this.disabledButton}" :disabled='this.disabledButton' @click="entrarSala">Entrar</button>
                 </div>
             </div>           
         </div>
@@ -65,15 +65,13 @@
         isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
         gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
         resolvePromise: undefined,              // variável para retorno das informações do modal
-        rejectPromise: undefined,               // variável para retorno das informações do modal
-        playerId: undefined                     // variável identificadora de jogador
+        rejectPromise: undefined               // variável para retorno das informações do modal
       }
     },
     methods: {
 
       // função de criação do modal de inicição
-      show(playerId) {
-        this.playerId = playerId,
+      show() {
         this.showPrincipal = true;
         this.valueInput = "";
         this.disabledButton = true;
@@ -110,7 +108,7 @@
           { 
             try
             {   
-              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode, "jogadorId": this.playerId})                  //acessa endpoint de criação de sala
+              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
                 .then( response => response)
                   .then(data=>{
                     localStorage.setItem("idjogo",data.data.data.id);

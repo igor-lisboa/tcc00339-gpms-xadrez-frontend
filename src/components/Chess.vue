@@ -270,10 +270,6 @@
     import toast from "./Toast";
     import http from './config/Http';
     import io from 'socket.io-client';
-
-    
-
-    import axios from "axios";
     
     export default {
         name: 'Chess',
@@ -286,19 +282,22 @@
         },
         data () {
             return {
-                movePhase: false,
-                player: "branco",
+                //modais
                 isModalIniciacaoVisible: false,
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
                 isModalWaitVisible: false,
+                //configuração jogo
                 idGame: undefined,
                 gameMode: undefined,
-                previouspos: "",
-                playerconf:{ladoId:0, tipoId:0}, 
-                playerId: undefined,
+                movePhase: false,
                 turn: undefined,
-                blackTurn: false
+                blackTurn: false,
+                //configuração jogador
+                player: "branco",
+                playerconf:{ladoId:0, tipoId:0}, 
+                //configuração jogadas
+                jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}}                
             }
         },
         destroyed(){
@@ -312,7 +311,7 @@
             // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
             showModalIniciacao() {
 
-                this.$refs.modalIniciacao.show(this.playerId).then(async(result) =>{
+                this.$refs.modalIniciacao.show().then(async(result) =>{
                     if(result){
 
                         this.isModalIniciacaoVisible = false;
@@ -410,6 +409,8 @@
                 });
                 this.isModalIniciacaoVisible = true;
             },
+
+            //função para mostrar modal de resultado da partida
             showResult() {
                 const result = 'win';
 
@@ -418,83 +419,139 @@
                     else this.isModalResultadoVisible = false;
                 });
             },
+
             //função de gerenciamento da escolha de peça
-            getPosition:function(ev){
-                console.log(document.getElementById(ev.target.id).style.backgroundImage)
-                if(!this.movePhase) {
-                    if(ev.target.style.backgroundImage != ""){    
-                        let pos = ev.target.id ;
-                        this.previouspos = ev.target.id 
-                        let jogada = {posicao:"", peca:""};
-                        jogada.peca = ev.target.style.backgroundImage;
-                        this.movePhase = true;
-                        jogada.posicao = pos ;
-                        // DEVE SER CRIADO UMA VARIAVEL EM PROPRIEDADES PARA AJUSTAR O CAMINHO DA API
-                        var config = {
-                                method: 'get',
-                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+pos+'/possiveis-jogadas',
-                                headers: { 
-                                    'lado': this.playerconf.ladoId
-                                }
-                                };
-                        axios(config).then(response => response
-                        ).then(
-                            json => {
-                                console.log("data"+json.data.data);
-                                if(json.data != null){
-                                    json.data.data.forEach(this.paintNextPos)
-                                    localStorage.setItem("positions",JSON.stringify(json.data.data))
-                                }
-                            } 
-                        ).then(localStorage.setItem("jogada",JSON.stringify(jogada))); 
-                    }else{
+            async getPosition(ev){
+
+                //verificar se é o turno do usuário
+                if(!this.turn){
+                    return;
+                }
+
+                // criação do headers da requisições
+                const headers = {
+                    'lado': this.playerconf.ladoId
+                }
+
+                if(!this.movePhase) {                            //fase de escolha de peça
+                                                                 
+                    if( ev.target.style.backgroundImage == "" ){       //caso não tenha escolhido uma casa sem peça
                         return;
                     }
-                }else{
-                    let jogada =JSON.parse( localStorage.getItem("jogada"));
-                    let actualPos = ev.target.id ;
-                    document.getElementById(this.previouspos).style.backgroundImage = "";
-                    ev.target.style.backgroundImage = jogada.peca;
-                     config = {
-                                method: 'post',
-                                url: 'http://localhost:3333/jogos/'+this.idGame+'/pecas/'+this.previouspos +'/move/'+ actualPos,
-                                headers: { 
-                                    'lado': localStorage.getItem("ladoId")
+
+                    if( !ev.target.style.backgroundImage.includes(this.player) ){   //caso não tenha escolhido uma de suas peças
+                        return;
+                    }
+                    
+                    this.jogada.posicaoPrevia = ev.target.id 
+                    
+                    //let jogada = {posicao:"", peca:""};
+                    this.jogada.peca = ev.target.style.backgroundImage;
+                    this.jogada.posicao = ev.target.id;
+                         
+
+                    await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response
+                    ).then(
+                        json => {
+                            console.log("data" + json.data.data);
+                            if(json.data != null){
+                                json.data.data.forEach(this.paintNextPos);
+                                this.jogada.posicoes = JSON.stringify(json.data.data);
+                                this.movePhase = true;
+                            }
+                        } 
+                    ); 
+                    
+                }else{    //fase de movimento de peça
+                    
+                    if( ev.target.style.backgroundImage.includes(this.player)  ){   //caso tenha escolhido outra de suas peças
+                        
+                        let pos = JSON.parse(this.jogada.posicoes)
+                        
+                        if(this.removePaint != null){
+                            pos.forEach(this.removePaint)
+                        } 
+
+                        this.jogada.posicaoPrevia = ev.target.id 
+                        
+                        this.jogada.peca = ev.target.style.backgroundImage;
+                        this.jogada.posicao = ev.target.id;
+
+                        await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response
+                        ).then(
+                            json => {
+                                console.log("data" + json.data.data);
+                                if(json.data != null){
+                                    json.data.data.forEach(this.paintNextPos);
+                                    this.jogada.posicoes = JSON.stringify(json.data.data);
+                                    this.movePhase = true;
                                 }
-                                };
-                    axios(config).then(response=>console.log("esse"+response)).then(console.log("foi")).catch(error=>console.log(error))
-                    var pos=localStorage.getItem("positions")
-                    pos= JSON.parse(pos)
+                            } 
+                        ); 
+
+                        return;
+                    }
+
+                    if( !ev.target.classList.contains("move") && !ev.target.classList.contains("catch") ){       //caso não tenha escolhido uma casa possível de realizar o movimento
+                        return;
+                    }
+
+                    let actualPos = ev.target.id ;
+                    document.getElementById(this.jogada.posicaoPrevia).style.backgroundImage = "";
+                    ev.target.style.backgroundImage = this.jogada.peca;
+                    await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
+                        .then( response => response)
+                            .then(data=> {
+                                console.log(data)
+                            });
+                    let pos = JSON.parse(this.jogada.posicoes)
                     
                     if(this.removePaint != null){
                         pos.forEach(this.removePaint)
                     } 
                     this.movePhase = false;
+                    this.turn = !this.turn;
+                    this.blackTurn = !this.blackTurn;
                 }
             },
+
             // função para pintar as casas onde a peça pode ser movida
             paintNextPos:function(item){
                 console.log(item.casa)
-                 
-                 document.getElementById(item.casa.casa).classList.add("greenie");
+                
+                if(document.getElementById(item.casa.casa).style.backgroundImage != "" ){
+                    document.getElementById(item.casa.casa).classList.add("catch");
+                }else{
+                    document.getElementById(item.casa.casa).classList.add("move");
+                }
+                
             },
+
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){  
-                 document.getElementById(item.casa.casa).classList.remove("greenie");
+                document.getElementById(item.casa.casa).classList.remove("move");
+                document.getElementById(item.casa.casa).classList.remove("catch");
                  
-                 this.movePhase = false;
+                this.movePhase = false;
             },
 
             //criação do socket
-            createSocket: function(){
-                this.playerId = Date.now();           
+            createSocket: function(){          
             this.socket = io("http://localhost:3333/", {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
             this.socket.on("connect", () => {
-                // either with send()
+
                 console.log("Socket conectado:" + this.socket.id);
 
                 this.socket.on('adversarioEntrou', () =>{
                     this.isModalWaitVisible = false;
+                })
+
+                this.socket.on("jogadaRealizada",(data) =>{
+
+                    document.getElementById(data.casaDestino.casa).style.backgroundImage = document.getElementById(data.casaOrigem.casa).style.backgroundImage;
+                    document.getElementById(data.casaOrigem.casa).style.backgroundImage = "";
+                    this.turn = !this.turn;
+                    this.blackTurn = !this.blackTurn;
                 })
             });
 
@@ -545,10 +602,6 @@
     {
         height: 82px;
     }
-    .greenie{
-        background:#66ff99!important;
-        pointer-events: all !important;
-    }
 
     /*******************  Tabuleiro ********************/
     .container {
@@ -597,6 +650,16 @@
     {
         background-color: #FFEBCD;
     }
+    .move
+    {
+        background-color:#66ff99 !important;
+        pointer-events: all !important;
+    }
+    .catch
+    {
+        background-color:#ff7866 !important;
+        pointer-events: all !important;
+    }
 
     /********************* demais estilos ***********************/
     .blur-content{
@@ -630,10 +693,10 @@
         margin-right: -0.25em;
     }
     .my-turn{
-        border: 3px solid #009e1b;
+        border: 5px solid #03ff2d;
     }
     .opponent-turn{
-        border: 5px solid #ce0303;
+        border: 5px solid #ff0404;
     }
     
     .centered {
