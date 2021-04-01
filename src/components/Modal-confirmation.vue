@@ -97,7 +97,7 @@
   .modal-confirmation .title-page
   {
     position: absolute;
-    height: 130px;
+    height: 150px;
     left: 0;
     display: flex;
     align-items: center;
@@ -111,8 +111,8 @@
   }
   .modal-confirmation .title-page img
   {
-    margin: 0 1em 0 1em;
-    width: 20%;
+    margin: 0 0.5em 0 0.5em;
+    width: 22%;
     border-radius: 80px;
   }
   div.close-header
@@ -134,7 +134,7 @@
   }
   .modal-confirmation .body
   {
-    margin-top: 140px;
+    margin-top: 160px;
     height: calc( 100% - 130px );
   }
 
