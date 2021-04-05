@@ -113,7 +113,7 @@
           { 
             try
             {   
-              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
+              await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
                 .then( response => response)
                   .then(data=>{
                     localStorage.setItem("idjogo",data.data.data.id);

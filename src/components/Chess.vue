@@ -529,7 +529,7 @@
 
             //criação do socket
             createSocket: function(){          
-            this.socket = io("http://localhost:3333/", {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
             this.socket.on("connect", () => {
 
                 this.socket.on('adversarioEntrou', () =>{
@@ -537,7 +537,6 @@
                 })
 
                 this.socket.on("jogadaRealizada",(data) =>{
-
                     document.getElementById(data.casaDestino.casa).style.backgroundImage = document.getElementById(data.casaOrigem.casa).style.backgroundImage;
                     document.getElementById(data.casaOrigem.casa).style.backgroundImage = "";
                     this.turn = !this.turn;
