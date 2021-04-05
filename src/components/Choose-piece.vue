@@ -1,7 +1,7 @@
 <template>
   <transition name="modal-fade">
-    <div class="modal-confirmation">
-      <div class="modal-confirmation-container"
+    <div class="modal-choose">
+      <div class="modal-choose-container"
         role="dialog"
         aria-labelledby="modalTitle"
         aria-describedby="modalDescription"
@@ -15,9 +15,15 @@
         <div class="body">
             <div class="message">
                 <label>{{message}}</label>
-                <div>
-                   <input type="radio" name="optJogo" value="branco" checked> Branco 
-                    <input type="radio" name="optJogo" value="preto"> Preto 
+                <div class="select-color-area">
+                  <input type="radio" id="branco" name="optPeca" value="branco" checked> 
+                    <label for="branco" title="BRANCO">
+                      <img src="../assets/imgs/pecas/rei_branco.png" >
+                    </label> 
+                  <input type="radio" id="preto" name="optPeca" value="preto">
+                    <label for="preto"  title="PRETO">
+                      <img src="../assets/imgs/pecas/rei_preto.png">
+                    </label>  
                 </div>   
                 <div>
                   <button class="confirm" @click="confirmar">CONFIRMAR ESCOLHA</button> 
@@ -31,7 +37,7 @@
 
 <script>
   export default {
-    name: 'modalConfirmation',
+    name: 'modalChoose',
     data () {
       return {
         type: "",
@@ -55,7 +61,7 @@
         },
         // função para evento de confirmação
         confirmar() {
-            this.resolvePromise(document.querySelectorAll("input[name=optJogo]:checked")[0].value);
+          this.resolvePromise(document.querySelectorAll("input[name=optPeca]:checked")[0].value);
         },
         // função para evento de desaprovação
         cancelar() {
@@ -67,7 +73,7 @@
 
 <style>
   /******************* Estrutura do modal **********************/
-  .modal-confirmation
+  .modal-choose
   {
     position: absolute;
     top: 0;
@@ -80,7 +86,7 @@
     justify-content: center;
     align-items: center;
   }
-  .modal-confirmation-container
+  .modal-choose-container
   {
     display: flex;
     flex-direction: column;
@@ -91,10 +97,10 @@
     box-shadow: 1px 1px 5px -1px #000000ad;
     position: relative;
   }
-  .modal-confirmation .title-page
+  .modal-choose .title-page
   {
     position: absolute;
-    height: 130px;
+    height: 150px;
     left: 0;
     display: flex;
     align-items: center;
@@ -106,10 +112,10 @@
     font-size: 2.1em;
     font-weight: bold;
   }
-  .modal-confirmation .title-page img
+  .modal-choose .title-page img
   {
-    margin: 0 1em 0 1em;
-    width: 20%;
+    margin: 0 0.5em 0 0.5em;
+    width: 22%;
     border-radius: 80px;
   }
   div.close-header
@@ -129,9 +135,9 @@
   {
     width: 60%;
   }
-  .modal-confirmation .body
+  .modal-choose .body
   {
-    margin-top: 140px;
+    margin-top: 160px;
     height: calc( 100% - 130px );
   }
 
@@ -164,5 +170,41 @@
     background-color: transparent;
     border: 1px solid #f80606;
     color: #db2209;
+  }
+
+  /******************** opções de cor **********************/
+  .select-color-area 
+  {
+    margin: 10px;
+    display: flex;
+  }
+  .select-color-area input[type="radio"] 
+  {
+    opacity: 0;
+    position: fixed;
+    margin: 5%;
+  }
+  .select-color-area label
+  {
+    display: inline-block;
+    background-color: #ddd;
+    margin: 10px;
+    font-family: sans-serif, Arial;
+    font-size: 16px;
+    border: 2px solid #444;
+    border-radius: 4px;
+  }
+  .select-color-area label:hover 
+  {
+    background-color: #dfd;
+  }
+  .select-color-area label img
+  {
+    width: 30%;
+  }
+  .select-color-area input[type="radio"]:checked + label 
+  {
+    background-color: #bfb;
+    border-color: #4c4;
   }
 </style>

@@ -23,9 +23,12 @@
             <div class="new-game">
                 <label>Iniciar novo jogo: </label>
                 <div>
-                    <input type="radio" name="optJogo" value="0" checked> JxJ
-                    <input type="radio" name="optJogo" value="1"> JxIA
-                    <input type="radio" name="optJogo" value="2"> IAxIA
+                    <input type="radio" id="JxJ" name="optJogos" value="0" checked> 
+                      <label for="jogo1"> JxJ </label>
+                    <input type="radio" id="JxIA" name="optJogos" value="1"> 
+                      <label for="jogo2"> JxIA </label>
+                    <input type="radio" id="IAxIA" name="optJogos" value="2"> 
+                      <label for="jogo3"> IAxIA </label>
                   <button @click="criarSala">Iniciar agora</button>
                 </div>
             </div>
@@ -65,7 +68,7 @@
         isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
         gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
         resolvePromise: undefined,              // variável para retorno das informações do modal
-        rejectPromise: undefined               // variável para retorno das informações do modal
+        rejectPromise: undefined                // variável para retorno das informações do modal
       }
     },
     methods: {
@@ -75,6 +78,7 @@
         this.showPrincipal = true;
         this.valueInput = "";
         this.disabledButton = true;
+        document.getElementById("JxJ").checked = true;
         return new Promise((resolve, reject) => {
           this.resolvePromise = resolve;
           this.rejectPromise = reject;
@@ -94,12 +98,14 @@
       
       //função de criação de sala
       async criarSala() {
-        this.gameMode = document.querySelectorAll("input[name=optJogo]:checked")[0].value;
+        console.log(document.querySelectorAll("input[name=optJogos]:checked")[0])
+
+        this.gameMode = document.querySelectorAll("input[name=optJogos]:checked")[0].value;
 
         //aciona modal de confirmação
         this.$refs.modalConfirmation.show({
           title: 'Criação de sala',
-          message: 'Deseja realmente criar uma nova sala para iniciar um jogo?',
+          message: 'Deseja realmente criar uma nova sala ' + document.querySelectorAll("input[name=optJogos]:checked")[0].id + ' para iniciar um jogo?',
           type: 'create'
         }).then(async (result) =>{ 
 
@@ -107,7 +113,7 @@
           { 
             try
             {   
-              await http.post("jogos?socketid="+this.socketId, {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
+              await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
                 .then( response => response)
                   .then(data=>{
                     localStorage.setItem("idjogo",data.data.data.id);
@@ -133,6 +139,7 @@
           else                                               //caso não seja confirmado pelo back a criação da sala
           {                                                   
             this.showPrincipal = true;
+            //document.getElementById("jogo1").checked = true;
           }
           this.isConfirmationVisible = false;
         });
@@ -268,7 +275,7 @@
   .modal-initiation .title-page
   {
     position: absolute;
-    height: 130px;
+    height: 150px;
     left: 0;
     display: flex;
     align-items: center;
@@ -282,7 +289,7 @@
   }
   .modal-initiation .title-page img
   {
-    margin: 0 1em 0 1em;
+    margin: 0 0.5em 0 0.5em;
     width: 22%;
     border-radius: 80px;
   }
