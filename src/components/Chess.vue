@@ -510,19 +510,18 @@
 
             // função para pintar as casas onde a peça pode ser movida
             paintNextPos:function(item){
-                
-                if(document.getElementById(item.casa.casa).style.backgroundImage != "" ){
-                    document.getElementById(item.casa.casa).classList.add("catch");
+                if(document.getElementById(item.casaDestino.casa).style.backgroundImage != "" ){
+                    document.getElementById(item.casaDestino.casa).classList.add("catch");
                 }else{
-                    document.getElementById(item.casa.casa).classList.add("move");
+                    document.getElementById(item.casaDestino.casa).classList.add("move");
                 }
                 
             },
 
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){  
-                document.getElementById(item.casa.casa).classList.remove("move");
-                document.getElementById(item.casa.casa).classList.remove("catch");
+                document.getElementById(item.casaDestino.casa).classList.remove("move");
+                document.getElementById(item.casaDestino.casa).classList.remove("catch");
                  
                 this.movePhase = false;
             },
