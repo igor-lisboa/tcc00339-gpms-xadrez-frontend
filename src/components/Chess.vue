@@ -537,8 +537,8 @@
                 })
 
                 this.socket.on("jogadaRealizada",(data) =>{
-                    document.getElementById(data.casaDestino.casa).style.backgroundImage = document.getElementById(data.casaOrigem.casa).style.backgroundImage;
-                    document.getElementById(data.casaOrigem.casa).style.backgroundImage = "";
+                    document.getElementById(data.jogadaRealizada.casaDestino.casa).style.backgroundImage = document.getElementById(data.jogadaRealizada.casaOrigem.casa).style.backgroundImage;
+                    document.getElementById(data.jogadaRealizada.casaOrigem.casa).style.backgroundImage = "";
                     this.turn = !this.turn;
                     this.blackTurn = !this.blackTurn;
                 })
