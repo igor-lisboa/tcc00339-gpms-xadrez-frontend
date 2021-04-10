@@ -297,7 +297,8 @@
                 player: "branco",
                 playerconf:{ladoId:0, tipoId:0}, 
                 //configuração jogadas
-                jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}}                
+                jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
+                mapJogada: new Map()              
             }
         },
         destroyed(){
@@ -452,6 +453,7 @@
                     ).then(
                         json => {
                             if(json.data != null){
+                                this.mapJogada = new Map();
                                 json.data.data.forEach(this.paintNextPos);
                                 this.jogada.posicoes = JSON.stringify(json.data.data);
                                 this.movePhase = true;
@@ -463,11 +465,7 @@
                     
                     if( ev.target.style.backgroundImage.includes(this.player)  ){   //caso tenha escolhido outra de suas peças
                         
-                        let pos = JSON.parse(this.jogada.posicoes)
-                        
-                        if(this.removePaint != null){
-                            pos.forEach(this.removePaint)
-                        } 
+                        JSON.parse(this.jogada.posicoes).forEach(this.removePaint); 
 
                         this.jogada.posicaoPrevia = ev.target.id 
                         
@@ -478,6 +476,7 @@
                         ).then(
                             json => {
                                 if(json.data != null){
+                                    this.mapJogada = new Map();
                                     json.data.data.forEach(this.paintNextPos);
                                     this.jogada.posicoes = JSON.stringify(json.data.data);
                                     this.movePhase = true;
@@ -493,28 +492,26 @@
                     }
 
                     let actualPos = ev.target.id ;
-                    document.getElementById(this.jogada.posicaoPrevia).style.backgroundImage = "";
                     ev.target.style.backgroundImage = this.jogada.peca;
                     await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
                         .then( response => response);
-                    let pos = JSON.parse(this.jogada.posicoes)
-                    
-                    if(this.removePaint != null){
-                        pos.forEach(this.removePaint)
-                    } 
+                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos);
+
+                    JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
+
                     this.movePhase = false;
-                    this.turn = !this.turn;
-                    this.blackTurn = !this.blackTurn;
                 }
             },
 
             // função para pintar as casas onde a peça pode ser movida
             paintNextPos:function(item){
-                if(document.getElementById(item.casaDestino.casa).style.backgroundImage != "" ){
+                if( item.captura ){
                     document.getElementById(item.casaDestino.casa).classList.add("catch");
                 }else{
                     document.getElementById(item.casaDestino.casa).classList.add("move");
                 }
+                this.mapJogada.set(item.casaDestino.casa, item.nome);
+                document.getElementById(item.casaDestino.casa).title = item.nome ? item.nome : "";
                 
             },
 
@@ -522,8 +519,45 @@
             removePaint:function(item){  
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
                 document.getElementById(item.casaDestino.casa).classList.remove("catch");
+                document.getElementById(item.casaDestino.casa).title = "";
                  
                 this.movePhase = false;
+            },
+
+            // função para realizar alteração de jogada no tabuleiro
+            accomplishMove: function(origin, destiny){
+             switch(this.mapJogada.get(destiny)){
+                case "En Passant":
+                    var passantSum = 1;
+                    if(document.getElementById(origin).style.backgroundImage.includes("branco")){
+                        passantSum = passantSum * (-1);
+                    }
+                    var peaoCaptured = destiny.substring(0,1) + (Number(destiny.substring(1)) + passantSum).toString();
+                    document.getElementById(peaoCaptured).style.backgroundImage = "";
+                    break;  
+                case "Roque Maior":
+                    var roqueMaPos = "8";
+                    if(document.getElementById(origin).style.backgroundImage.includes("branco")){
+                        roqueMaPos = "1";
+                    }
+                    var torreRMaPosition = String.fromCharCode(destiny.substring(0,1).charCodeAt(0) + 1) + destiny.substring(1);
+                    document.getElementById(torreRMaPosition).style.backgroundImage = document.getElementById("A" + roqueMaPos).style.backgroundImage;
+                    document.getElementById("A" + roqueMaPos).style.backgroundImage = "";
+                    break;
+                case "Roque Menor":
+                    var roqueMePos = "8";
+                    if(document.getElementById(origin).style.backgroundImage.includes("branco")){
+                        roqueMePos = "1";
+                    }
+                    var torreRMePosition = String.fromCharCode(destiny.substring(0,1).charCodeAt(0) - 1) + destiny.substring(1);
+                    document.getElementById(torreRMePosition).style.backgroundImage = document.getElementById("H" + roqueMePos).style.backgroundImage;
+                    document.getElementById("H" + roqueMePos).style.backgroundImage = "";
+                    break; 
+             }
+                document.getElementById(destiny).style.backgroundImage = document.getElementById(origin).style.backgroundImage;
+                document.getElementById(origin).style.backgroundImage = "";
+                this.turn = !this.turn;
+                this.blackTurn = !this.blackTurn;
             },
 
             //criação do socket
@@ -536,10 +570,8 @@
                 })
 
                 this.socket.on("jogadaRealizada",(data) =>{
-                    document.getElementById(data.jogadaRealizada.casaDestino.casa).style.backgroundImage = document.getElementById(data.jogadaRealizada.casaOrigem.casa).style.backgroundImage;
-                    document.getElementById(data.jogadaRealizada.casaOrigem.casa).style.backgroundImage = "";
-                    this.turn = !this.turn;
-                    this.blackTurn = !this.blackTurn;
+                    this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa);
                 })
             });
 
