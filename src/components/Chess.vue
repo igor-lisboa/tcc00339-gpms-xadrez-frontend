@@ -511,6 +511,7 @@
                     document.getElementById(item.casaDestino.casa).classList.add("move");
                 }
                 this.mapJogada.set(item.casaDestino.casa, item.nome);
+                document.getElementById(item.casaDestino.casa).title = item.nome ? item.nome : "";
                 
             },
 
@@ -518,6 +519,7 @@
             removePaint:function(item){  
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
                 document.getElementById(item.casaDestino.casa).classList.remove("catch");
+                document.getElementById(item.casaDestino.casa).title = "";
                  
                 this.movePhase = false;
             },
@@ -532,7 +534,25 @@
                     }
                     var peaoCaptured = destiny.substring(0,1) + (Number(destiny.substring(1)) + passantSum).toString();
                     document.getElementById(peaoCaptured).style.backgroundImage = "";
-                    break;       
+                    break;  
+                case "Roque Maior":
+                    var roqueMaPos = "8";
+                    if(document.getElementById(origin).style.backgroundImage.includes("branco")){
+                        roqueMaPos = "1";
+                    }
+                    var torreRMaPosition = String.fromCharCode(destiny.substring(0,1).charCodeAt(0) + 1) + destiny.substring(1);
+                    document.getElementById(torreRMaPosition).style.backgroundImage = document.getElementById("A" + roqueMaPos).style.backgroundImage;
+                    document.getElementById("A" + roqueMaPos).style.backgroundImage = "";
+                    break;
+                case "Roque Menor":
+                    var roqueMePos = "8";
+                    if(document.getElementById(origin).style.backgroundImage.includes("branco")){
+                        roqueMePos = "1";
+                    }
+                    var torreRMePosition = String.fromCharCode(destiny.substring(0,1).charCodeAt(0) - 1) + destiny.substring(1);
+                    document.getElementById(torreRMePosition).style.backgroundImage = document.getElementById("H" + roqueMePos).style.backgroundImage;
+                    document.getElementById("H" + roqueMePos).style.backgroundImage = "";
+                    break; 
              }
                 document.getElementById(destiny).style.backgroundImage = document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
