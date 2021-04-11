@@ -504,7 +504,7 @@
                     ev.target.style.backgroundImage = this.jogada.peca;
                     await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
                         .then( response => response);
-                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos);
+                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos,true);
 
                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
 
@@ -534,7 +534,10 @@
             },
 
             // função para realizar alteração de jogada no tabuleiro
-            async accomplishMove(origin, destiny){
+            async accomplishMove(origin, destiny,opo){
+                const headers = {
+                    'lado': this.playerconf.ladoId
+                }
              switch(this.mapJogada.get(destiny)){
                 case "En Passant":
                     var passantSum = 1;
@@ -563,12 +566,24 @@
                     document.getElementById("H" + roqueMePos).style.backgroundImage = "";
                     break; 
                 case "Promoção do Peão":
+                     if(opo){
                     this.isModalPromoVisible = true;
+                     }
                     var pieceChoosed = undefined;
                     var pieceBackgroundChoosed = undefined
                     await this.$refs.ModalPromoPiece.show(this.playerconf.ladoId).then(result => {
                         pieceChoosed = result.pieceValue;
                         console.log(pieceChoosed)
+                         try
+                        {
+                             http.post("/jogos/"+this.idGame+"/promove-peao/"+pieceChoosed,{},{ headers: headers })         //chama endpoint de escolha de peça
+                                .then(response=>response)
+                        }catch(error){
+                            this.$refs.toast.show({
+                                    message: 'Erro ao entrar na sala',
+                                    type: 'error'
+                                });
+                        }        
                         pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ result.pieceBackground +'.png') + ')';
 
                         //realizar chamada do back de promoção de peão
@@ -593,8 +608,12 @@
                 })
 
                 this.socket.on("jogadaRealizada",(data) =>{
+                    console.log("log de merda", data)
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
-                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa);
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa,false);
+                })
+                this.socket.on("promocaoPeao",(data)=>{
+                    console.log(data)
                 })
             });
 
