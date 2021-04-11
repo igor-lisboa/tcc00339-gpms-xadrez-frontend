@@ -2,8 +2,6 @@
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     <div v-if="player=='branco'" class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
-            <!-- código do botão terá q sair futuramente -->
-            <!-- <button @click="showResult">Mostrar resultado</button> -->
             <div class="horizontal-position">
                 <div>8</div>
                 <div>7</div>
@@ -132,8 +130,6 @@
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
-            <!-- código do botão terá q sair futuramente -->
-            <!-- <button @click="showResult">Mostrar resultado</button> -->
             <div class="horizontal-position">
                 <div>1</div>
                 <div>2</div>
@@ -412,7 +408,7 @@
 
             //função para mostrar modal de resultado da partida
             showResult() {
-                const result = 'win';
+                const result = 'draw';
 
                 this.$refs.modalResultado.gameResult({ result }).then((response) =>{
                     if(response) this.isModalResultadoVisible = true;
