@@ -9,8 +9,10 @@
         >
           <div class="header">
               <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
-                  <img src="../assets/imgs/dog_chess.png" alt="logo">
-                  <span>{{title}}</span>
+                <img src="../assets/imgs/dog_chess_win.png" v-if="result == 'win'">
+                <img src="../assets/imgs/dog_chess_lose.png" v-if="result == 'lose'">
+                <img src="../assets/imgs/dog_chess_draw.png" v-if="result == 'draw'">
+                <span>{{title}}</span>
               </div>
           </div>
           <div class="body">
@@ -34,11 +36,12 @@
 
     export default {
         data() {
-            return { 
-              title: null,
-              message: null,
-              isIniciationVisible: false
-            }
+          return { 
+            title: null,
+            message: null,
+            isIniciationVisible: false,
+            result: undefined
+          }
         },
         name: 'modalResultado',
         components: {
@@ -50,17 +53,18 @@
             },
             
             gameResult({ result }) {
+              this.result = result;
               switch(result) {
                 case 'win':
                   this.title = 'Vitória';
                   this.message = 'Parabéns pela sua vitória!'
                   break;
                 case 'lose':
-                  this.title = 'Perdeu';
+                  this.title = 'Derrota';
                   this.message = 'Não foi dessa vez! Tente novamente!'
                   break;
-                case 'tie':
-                  this.title = 'Empatou';
+                case 'draw':
+                  this.title = 'Empate';
                   this.message = 'Você e seu adversário empataram nesse jogo!'
                   break;
               }
@@ -101,7 +105,7 @@
   }
   .modal-result .title-page {
     position: absolute;
-    height: 130px;
+    height: 170px;
     left: 0;
     display: flex;
     align-items: center;
@@ -115,11 +119,11 @@
   }
   .modal-result .title-page img {
     margin: 0 1em 0 1em;
-    width: 20%;
-    border-radius: 80px;
+    width: 25%;
+    border-radius: 90px;
   }
   .modal-result .body {
-    margin-top: 140px;
+    margin-top: 170px;
     height: calc( 100% - 130px );
   }
   .message {
