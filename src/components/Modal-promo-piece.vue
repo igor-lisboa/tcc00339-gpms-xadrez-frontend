@@ -9,54 +9,53 @@
         <div class="header">
             <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
                 <img src="../assets/imgs/dog_chess_confirm.png">
-                <span>{{title}}</span>
+                <span>Promoção do Peão</span>
             </div>
         </div>
         <div class="body">
             <div class="message">
-                <p>{{pieceColor}}</p>
-                <label>{{message}}</label>
-                <div class="select-color-area" v-if="pieceColor=='0'">
-                  <input type="radio" id="rainha" name="optPromo" value="1" checked> 
-                    <label for="rainha" title="rainha">
+                <label>Escolha a peça a qual o Peão será promovido:</label>
+                <div class="select-piece-area" v-if="pieceColor=='0'">
+                  <input type="radio" id="rainha_branco" name="optPromoB" value="1" checked> 
+                    <label for="rainha_branco" title="Rainha">
                       <img src="../assets/imgs/pecas/rainha_branco.png" >
+                    </label>
+                  <input type="radio" id="torre_branco" name="optPromoB" value="2">
+                    <label for="torre_branco"  title="Torre">
+                      <img src="../assets/imgs/pecas/torre_branco.png">
                     </label> 
-                  <input type="radio" id="bispo" name="optPromo" value="3">
-                    <label for="bispo"  title="bispo">
+                  <input type="radio" id="bispo_branco" name="optPromoB" value="3">
+                    <label for="bispo_branco" title="Bispo">
                       <img src="../assets/imgs/pecas/bispo_branco.png">
                     </label> 
-                    <input type="radio" id="cavalo" name="optPromo" value="4">
-                    <label for="cavalo"  title="cavalo">
+                  <input type="radio" id="cavalo_branco" name="optPromoB" value="4">
+                    <label for="cavalo_branco"  title="Cavalo">
                       <img src="../assets/imgs/pecas/cavalo_branco.png">
                     </label>
-                     <input type="radio" id="torre" name="optPromo" value="2">
-                    <label for="torre"  title="torre">
-                      <img src="../assets/imgs/pecas/torre_branco.png">
-                    </label>
-                    <input type="radio" id="peao" name="optPromo" value="5">
-                    <label for="peao"  title="peao">
+                  <input type="radio" id="peao_branco" name="optPromoB" value="5">
+                    <label for="peao_branco" title="Peão">
                       <img src="../assets/imgs/pecas/peao_branco.png">
                     </label>    
                 </div>
-                <div class="select-color-area" v-else> 
-                   <input type="radio" id="rainha" name="optPromo" value="1" checked> 
-                    <label for="rainha" title="rainha">
+                <div class="select-piece-area" v-else> 
+                  <input type="radio" id="rainha_preto" name="optPromoP" value="1" checked> 
+                    <label for="rainha_preto" title="Rainha">
                       <img src="../assets/imgs/pecas/rainha_preto.png" >
+                    </label>
+                  <input type="radio" id="torre_preto" name="optPromoP" value="2">
+                    <label for="torre_preto" title="Torre">
+                      <img src="../assets/imgs/pecas/torre_preto.png">
                     </label> 
-                  <input type="radio" id="bispo" name="optPromo" value="3">
-                    <label for="bispo"  title="bispo">
+                  <input type="radio" id="bispo_preto" name="optPromo" value="3">
+                    <label for="bispo_preto"  title="Bispo">
                       <img src="../assets/imgs/pecas/bispo_preto.png">
                     </label> 
-                    <input type="radio" id="cavalo" name="optPromo" value="4">
-                    <label for="cavalo"  title="cavalo">
+                  <input type="radio" id="cavalo_preto" name="optPromoP" value="4">
+                    <label for="cavalo_preto" title="Cavalo">
                       <img src="../assets/imgs/pecas/cavalo_preto.png">
                     </label>
-                     <input type="radio" id="torre" name="optPromo" value="2">
-                    <label for="torre"  title="torre">
-                      <img src="../assets/imgs/pecas/torre_preto.png">
-                    </label>
-                    <input type="radio" id="peao" name="optPromo" value="5">
-                    <label for="peao"  title="peao">
+                  <input type="radio" id="peao_preto" name="optPromoP" value="5">
+                    <label for="peao_preto" title="Peão">
                       <img src="../assets/imgs/pecas/peao_preto.png">
                     </label> 
                 </div> 
@@ -75,21 +74,15 @@
     name: 'modalChoose',
     data () {
       return {
-        type: "",
-        title: "",
-        message: "",
-        codeRoom: "",
         resolvePromise: undefined,
         rejectPromise: undefined,
-        pieceColor : "",
-        
+        pieceColor : undefined
       }
     },
     methods: {
-        // função de criação do modal de confirmação
-        show(opts = {}) {
-            this.title = opts.title;
-            this.message = opts.message;
+        // função de criação do modal de promoção do peão
+        show(pieceColor) {
+            this.pieceColor = pieceColor
             return new Promise((resolve, reject) => {
                 this.resolvePromise = resolve;
                 this.rejectPromise = reject;
@@ -97,11 +90,14 @@
         },
         // função para evento de confirmação
         confirmar() {
-          this.resolvePromise(document.querySelectorAll("input[name=optPromo]:checked")[0].value);
-        },
-        // função para evento de desaprovação
-        cancelar() {
-            this.resolvePromise(false);
+          let colorSTR = this.pieceColor == '0' ? "B" : "P";
+
+          let result = {
+            pieceValue: document.querySelectorAll("input[name=optPromo" + colorSTR +"]:checked")[0].value,
+            pieceBackground: document.querySelectorAll("input[name=optPromo" + colorSTR +"]:checked")[0].id
+          }
+
+          this.resolvePromise(result);
         }
     }
   };
@@ -201,26 +197,19 @@
     border: 1px solid #03d627;
     color: #06b153;
   }
-  .cancel
-  {
-    background-color: transparent;
-    border: 1px solid #f80606;
-    color: #db2209;
-  }
-
   /******************** opções de cor **********************/
-  .select-color-area 
+  .select-piece-area 
   {
     margin: 10px;
     display: flex;
   }
-  .select-color-area input[type="radio"] 
+  .select-piece-area input[type="radio"] 
   {
     opacity: 0;
     position: fixed;
     margin: 5%;
   }
-  .select-color-area label
+  .select-piece-area label
   {
     display: inline-block;
     background-color: #ddd;
@@ -230,15 +219,15 @@
     border: 2px solid #444;
     border-radius: 4px;
   }
-  .select-color-area label:hover 
+  .select-piece-area label:hover 
   {
     background-color: #dfd;
   }
-  .select-color-area label img
+  .select-piece-area label img
   {
-    width: 30%;
+    width: 90%;
   }
-  .select-color-area input[type="radio"]:checked + label 
+  .select-piece-area input[type="radio"]:checked + label 
   {
     background-color: #bfb;
     border-color: #4c4;

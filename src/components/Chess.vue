@@ -534,7 +534,7 @@
             },
 
             // função para realizar alteração de jogada no tabuleiro
-            accomplishMove: function(origin, destiny){
+            async accomplishMove(origin, destiny){
              switch(this.mapJogada.get(destiny)){
                 case "En Passant":
                     var passantSum = 1;
@@ -563,19 +563,21 @@
                     document.getElementById("H" + roqueMePos).style.backgroundImage = "";
                     break; 
                 case "Promoção do Peão":
-                    
-                    this.$refs.ModalPromoPiece.show({
-                                title: 'Escolha uma peça',
-                                message: 'Deseja qual peça para promover seu peão?',
-                                pieceColor:this.playerconf.ladoId
-                            }).then()
-                            this.isModalPromoVisible = true;
+                    this.isModalPromoVisible = true;
+                    var pieceChoosed = undefined;
+                    var pieceBackgroundChoosed = undefined
+                    await this.$refs.ModalPromoPiece.show(this.playerconf.ladoId).then(result => {
+                        pieceChoosed = result.pieceValue;
+                        console.log(pieceChoosed)
+                        pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ result.pieceBackground +'.png') + ')';
+
+                        //realizar chamada do back de promoção de peão
+
+                        this.isModalPromoVisible = false;
+                    }); 
                     break;
-                }
-                
-             
-            
-                document.getElementById(destiny).style.backgroundImage = document.getElementById(origin).style.backgroundImage;
+                }           
+                document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
                 this.turn = !this.turn;
                 this.blackTurn = !this.blackTurn;
