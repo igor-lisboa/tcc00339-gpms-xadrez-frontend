@@ -1,9 +1,11 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
+    
     <div v-if="player=='branco'" class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
             <!-- código do botão terá q sair futuramente -->
             <!-- <button @click="showResult">Mostrar resultado</button> -->
+            
             <div class="horizontal-position">
                 <div>8</div>
                 <div>7</div>
@@ -124,6 +126,10 @@
         <modal-choose-piece
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
+        />
+         <modal-promo-piece
+        ref="ModalPromoPiece"
+        v-show="isModalPromoVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
@@ -256,6 +262,10 @@
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
         />
+        <modal-promo-piece
+        ref="ModalPromoPiece"
+        v-show="isModalPromoVisible"
+        />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
         <toast ref="toast"/>
@@ -263,6 +273,7 @@
 </template>
 
 <script>
+    
     import modalIniciacao from "./Modal-iniciacao";
     import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
@@ -270,7 +281,7 @@
     import toast from "./Toast";
     import http from './config/Http';
     import io from 'socket.io-client';
-    
+    import ModalPromoPiece from './Modal-promo-piece.vue';
     export default {
         name: 'Chess',
         components: { 
@@ -278,7 +289,8 @@
             modalChoosePiece, 
             modalResultado,
             modalWait,
-            toast 
+            toast,
+            ModalPromoPiece 
         },
         data () {
             return {
@@ -287,6 +299,7 @@
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
                 isModalWaitVisible: false,
+                isModalPromoVisible:false,
                 //configuração jogo
                 idGame: undefined,
                 gameMode: undefined,
@@ -553,7 +566,19 @@
                     document.getElementById(torreRMePosition).style.backgroundImage = document.getElementById("H" + roqueMePos).style.backgroundImage;
                     document.getElementById("H" + roqueMePos).style.backgroundImage = "";
                     break; 
-             }
+                case "Promoção do Peão":
+                    
+                    this.$refs.ModalPromoPiece.show({
+                                title: 'Escolha uma peça',
+                                message: 'Deseja qual peça para promover seu peão?',
+                                pieceColor:this.playerconf.ladoId
+                            }).then()
+                            this.isModalPromoVisible = true;
+                    break;
+                }
+                
+             
+            
                 document.getElementById(destiny).style.backgroundImage = document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
                 this.turn = !this.turn;
@@ -575,7 +600,8 @@
                 })
             });
 
-            }
+            },
+            
         }
     }
 </script>
