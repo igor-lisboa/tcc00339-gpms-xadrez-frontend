@@ -1,7 +1,9 @@
 <template>
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
+    
     <div v-if="player=='branco'" class="containerFull">
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
+            
             <div class="horizontal-position">
                 <div>8</div>
                 <div>7</div>
@@ -122,6 +124,10 @@
         <modal-choose-piece
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
+        />
+         <modal-promo-piece
+        ref="ModalPromoPiece"
+        v-show="isModalPromoVisible"
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
@@ -252,6 +258,10 @@
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
         />
+        <modal-promo-piece
+        ref="ModalPromoPiece"
+        v-show="isModalPromoVisible"
+        />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
         <toast ref="toast"/>
@@ -259,6 +269,7 @@
 </template>
 
 <script>
+    
     import modalIniciacao from "./Modal-iniciacao";
     import modalChoosePiece from "./Choose-piece";
     import modalResultado from "./Modal-resultado";
@@ -266,7 +277,7 @@
     import toast from "./Toast";
     import http from './config/Http';
     import io from 'socket.io-client';
-    
+    import ModalPromoPiece from './Modal-promo-piece.vue';
     export default {
         name: 'Chess',
         components: { 
@@ -274,7 +285,8 @@
             modalChoosePiece, 
             modalResultado,
             modalWait,
-            toast 
+            toast,
+            ModalPromoPiece 
         },
         data () {
             return {
@@ -283,6 +295,7 @@
                 isModalResultadoVisible: false,
                 isModalChoosePieceVisible: false,
                 isModalWaitVisible: false,
+                isModalPromoVisible:false,
                 //configuração jogo
                 idGame: undefined,
                 gameMode: undefined,
@@ -491,7 +504,7 @@
                     ev.target.style.backgroundImage = this.jogada.peca;
                     await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
                         .then( response => response);
-                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos);
+                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null);
 
                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
 
@@ -521,7 +534,10 @@
             },
 
             // função para realizar alteração de jogada no tabuleiro
-            accomplishMove: function(origin, destiny){
+            async accomplishMove(origin, destiny, promotedTo){
+                const headers = {
+                    'lado': this.playerconf.ladoId
+                }
              switch(this.mapJogada.get(destiny)){
                 case "En Passant":
                     var passantSum = 1;
@@ -549,8 +565,35 @@
                     document.getElementById(torreRMePosition).style.backgroundImage = document.getElementById("H" + roqueMePos).style.backgroundImage;
                     document.getElementById("H" + roqueMePos).style.backgroundImage = "";
                     break; 
-             }
-                document.getElementById(destiny).style.backgroundImage = document.getElementById(origin).style.backgroundImage;
+                case "Promoção do Peão":
+                    if(promotedTo == null){
+                        this.isModalPromoVisible = true;
+                        var pieceChoosed = undefined;
+                        var pieceBackgroundChoosed = undefined
+                        await this.$refs.ModalPromoPiece.show(this.playerconf.ladoId).then(result => {
+                            pieceChoosed = result.pieceValue;
+                            console.log(pieceChoosed)
+                            try
+                            {
+                                http.post("/jogos/"+this.idGame+"/promove-peao/"+pieceChoosed,{},{ headers: headers })         //chama endpoint de escolha de peça
+                                .then(response=>response)
+                            }catch(error){
+                                this.$refs.toast.show({
+                                    message: 'Erro ao entrar na sala',
+                                    type: 'error'
+                                });
+                            }        
+                            pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ result.pieceBackground +'.png') + ')';
+
+                            this.isModalPromoVisible = false;
+                        });
+                    }else{
+                        let pieceColor = this.playerconf.ladoId == 1 ? "_branco" : "_preto";
+                        pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ promotedTo.toLowerCase() + pieceColor +'.png') + ')';
+                    } 
+                    break;
+                }           
+                document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
                 this.turn = !this.turn;
                 this.blackTurn = !this.blackTurn;
@@ -567,11 +610,13 @@
 
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
-                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa);
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
                 })
+
             });
 
-            }
+            },
+            
         }
     }
 </script>
