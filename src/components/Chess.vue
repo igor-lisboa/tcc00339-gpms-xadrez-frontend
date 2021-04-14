@@ -2,7 +2,7 @@
     <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
     
     <div v-if="player=='branco'" class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
+        <!-- <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}"> -->
             
             <div class="horizontal-position">
                 <div>8</div>
@@ -116,7 +116,11 @@
                     </div> 
                 </div>
             </div>
-        </div>
+            <div>
+             <button class="des" @click="openModal('des')">Desistencia</button>
+             <button class="emp" @click="openModal('emp')">Comum acordo</button>
+            </div>
+        <!-- </div> -->
         <modal-iniciacao
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
@@ -131,11 +135,12 @@
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
+         <modal-confirmation ref="modalConfirmation" v-show="isModalConfirmationVisible"/>
         <toast ref="toast"/>
     </div>
     <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
     <div v-else class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}">
+        <!-- <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}"> -->
             <div class="horizontal-position">
                 <div>1</div>
                 <div>2</div>
@@ -249,7 +254,11 @@
                     </div> 
                 </div>
             </div>
-        </div>
+            <div>
+             <button class="des" @click="openModal('des')">Desistencia</button>
+             <button class="emp" @click="openModal('emp')">Comum acordo</button>
+            </div>
+        <!-- </div> -->
         <modal-iniciacao
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
@@ -264,6 +273,7 @@
         />
         <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
         <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
+        <modal-confirmation ref="modalConfirmation" v-show="isModalConfirmationVisible"/>
         <toast ref="toast"/>
     </div>
 </template>
@@ -278,6 +288,7 @@
     import http from './config/Http';
     import io from 'socket.io-client';
     import ModalPromoPiece from './Modal-promo-piece.vue';
+    import ModalConfirmation from './Modal-confirmation.vue';
     export default {
         name: 'Chess',
         components: { 
@@ -286,7 +297,8 @@
             modalResultado,
             modalWait,
             toast,
-            ModalPromoPiece 
+            ModalPromoPiece,
+            ModalConfirmation 
         },
         data () {
             return {
@@ -296,6 +308,7 @@
                 isModalChoosePieceVisible: false,
                 isModalWaitVisible: false,
                 isModalPromoVisible:false,
+                isModalConfirmationVisible: false,
                 //configuração jogo
                 idGame: undefined,
                 gameMode: undefined,
@@ -616,6 +629,28 @@
             });
 
             },
+            openModal:function(value){
+                if(value== "des"){
+                   this.$refs.modalConfirmation.show({
+                                title: 'Vai desistir',
+                                message: 'Confirme sua desistencia do jogo?',
+                                type: 'create',
+                                codeRoom: undefined
+                            }).then(async (result) =>{
+                                console.log(result)
+                            })
+                }else{
+                    this.$refs.modalConfirmation.show({
+                                title: 'Pediu arrego',
+                                message: 'Deseja pedir empate para o  jogo?',
+                                type: 'create',
+                                codeRoom: undefined
+                            }).then(async (result) =>{
+                                console.log(result)
+                            })
+                }
+                 this.isModalConfirmationVisible = true;
+            }
             
         }
     }
@@ -775,5 +810,26 @@
     {
         color: #ffff;
         background-color:#000;
+    }
+    /****************** botões ************************/
+    .emp{
+        background:#29bb89 ;
+        margin-top:45%;
+        margin-left: 1% ;
+        width:15%;
+         font-size: 1.2rem;
+       
+        
+        cursor: pointer;
+    }
+    .des{
+        background:#ffe268 ;
+        margin-top:45%;
+        margin-left:68% ;
+        width:15%;
+        font-size: 1.2rem;
+        
+         
+        cursor: pointer;
     }
 </style>
