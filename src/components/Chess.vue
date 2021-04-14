@@ -304,7 +304,8 @@
                 blackTurn: false,
                 //configuração jogador
                 player: "branco",
-                playerconf:{ladoId:0, tipoId:0}, 
+                playerconf:{ladoId:0, tipoId:0},
+                kingSquare: undefined, 
                 //configuração jogadas
                 jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
                 mapJogada: new Map()              
@@ -339,6 +340,7 @@
                                     this.player = result;
                                     result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
                                     this.turn = result == "branco" ? true : false;
+                                    this.kingSquare = result == "branco" ? "E1" : "E8";
 
                                     try
                                     {
@@ -384,6 +386,7 @@
                             let result = localStorage.getItem("ladoId")==0 ? "branco" : "preto"; 
                             this.player = result;
                             this.turn = result == "branco" ? true : false;
+                            this.kingSquare = result == "branco" ? "E1" : "E8";
 
                             this.playerconf.ladoId = localStorage.getItem("ladoId");
                             this.playerconf.tipoId = 0;
@@ -516,16 +519,25 @@
             paintNextPos:function(item){
                 if( item.captura ){
                     document.getElementById(item.casaDestino.casa).classList.add("catch");
+                    document.getElementById(item.casaDestino.casa).title = "Captura";
                 }else{
                     document.getElementById(item.casaDestino.casa).classList.add("move");
+                    document.getElementById(item.casaDestino.casa).title = "Movimento"
                 }
                 this.mapJogada.set(item.casaDestino.casa, item.nome);
-                document.getElementById(item.casaDestino.casa).title = item.nome ? item.nome : "";
+                if(item.nome){
+                    if(document.getElementById(item.casaDestino.casa).title == "Captura" && item.nome == "Promoção do Peão"){
+                        document.getElementById(item.casaDestino.casa).title = document.getElementById(item.casaDestino.casa).title + " e " + item.nome;
+                        return;
+                    }
+                    document.getElementById(item.casaDestino.casa).title = item.nome;
+                }
                 
             },
 
             // função para remover a pintura de casas onde peça pode ser movida
-            removePaint:function(item){  
+            removePaint:function(item){ 
+                console.log(item) 
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
                 document.getElementById(item.casaDestino.casa).classList.remove("catch");
                 document.getElementById(item.casaDestino.casa).title = "";
@@ -595,6 +607,12 @@
                 }           
                 document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
+
+                if(document.getElementById(destiny).style.backgroundImage.includes(this.playerconf.ladoId == 0 ? "rei_branco" : "rei_preto")){
+                    document.getElementById(this.kingSquare).classList.remove("check");
+                    this.kingSquare = destiny;
+                }
+
                 this.turn = !this.turn;
                 this.blackTurn = !this.blackTurn;
             },
@@ -611,6 +629,9 @@
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
                     this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
+                    if(data.jogo.chequeLadoAtual){
+                        document.getElementById(this.kingSquare).classList.add("check");
+                    }
                 })
 
             });
@@ -713,12 +734,17 @@
     }
     .move
     {
-        background-color:#66ff99 !important;
+        background-color:#59fc59 !important;
         pointer-events: all !important;
     }
     .catch
     {
-        background-color:#ff7866 !important;
+        background-color:#62dbfa !important;
+        pointer-events: all !important;
+    }
+    .check
+    {
+        background-color:#fc3030 !important;
         pointer-events: all !important;
     }
 
