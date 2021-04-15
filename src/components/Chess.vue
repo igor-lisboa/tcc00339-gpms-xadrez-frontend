@@ -211,10 +211,11 @@
                     </div> 
                 </div>
             </div>
-            <div>
+            <div class="button-area">
                 <button class="des" @click="openModal('des')">Desistencia</button>
                 <button class="emp" @click="openModal('emp')">Comum acordo</button>
             </div>
+
         </div>
         <modal-iniciacao
             ref="modalIniciacao"
@@ -756,7 +757,7 @@
         pointer-events: all !important;
     }
 
-    /********************* demais estilos ***********************/
+    /********************* painel de blur ***********************/
     .blur-content
     {
         filter: blur(5px); 
@@ -818,13 +819,19 @@
         color: #ffff;
         background-color:#000;
     }
-    /****************** botões ************************/
+    /****************** botões de ações ************************/
+    .button-area
+    {
+        margin-left: 74%;
+        position: absolute;
+        width: 25%;
+        top: 3%;
+    }
     .emp{
         background:#29bb89 ;
         margin-top:45%;
-        margin-left: 1% ;
-        width:15%;
-         font-size: 1.2rem;
+        width:40%;
+        font-size: 1.2rem;
        
         
         cursor: pointer;
@@ -832,8 +839,7 @@
     .des{
         background:#ffe268 ;
         margin-top:45%;
-        margin-left:68% ;
-        width:15%;
+        width:40%;
         font-size: 1.2rem;
         
          
