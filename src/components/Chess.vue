@@ -1,10 +1,8 @@
 <template>
-    <!-- VISÃO DO JOGADOR PEÇAS BRANCAS-->
-    
-    <div v-if="player=='branco'" class="containerFull">
-        <!-- <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}"> -->
-            
-            <div class="horizontal-position">
+    <div class="containerFull">
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}" class="content-height-blur">
+             
+            <div class="horizontal-position" v-if="player=='branco'">
                 <div>8</div>
                 <div>7</div>
                 <div>6</div>
@@ -14,6 +12,17 @@
                 <div>2</div>
                 <div>1</div>
             </div>
+            <div class="horizontal-position" v-else>
+                <div>1</div>
+                <div>2</div>
+                <div>3</div>
+                <div>4</div>
+                <div>5</div>
+                <div>6</div>
+                <div>7</div>
+                <div>8</div>
+            </div> 
+
             <div class="vertical-position">
                 <div>A</div>
                 <div>B</div>
@@ -24,7 +33,8 @@
                 <div>G</div>
                 <div>H</div>
             </div>
-            <div class="container">
+
+            <div class="container" v-if="player=='branco'">
                 <div class="row line-1">
                     <div id="A8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                     <div id="B8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_preto.png') + ')' }"></div>
@@ -82,7 +92,7 @@
                     <div id="D3" @click ="getPosition($event)"></div>
                     <div id="E3" @click ="getPosition($event)"></div>
                     <div id="F3" @click ="getPosition($event)"></div>
-                    <div id="G3" @click ="getPosition($event)" disabled = "true"></div>
+                    <div id="G3" @click ="getPosition($event)"></div>
                     <div id="H3" @click ="getPosition($event)"></div>
                 </div>
                 <div class="row line-1">
@@ -106,62 +116,8 @@
                     <div id="H1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
                 </div>
             </div>
-            <div class="turn">
-                <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
-                    <div class="centered" :class="{'black':  this.blackTurn}">
-                        <h3 v-if="this.turn">Sua vez</h3>
-                        <h3 v-else>Vez do adversário</h3>
-                        <span v-if="this.turn">Realize sua jogada</span>
-                        <span v-else>Espere sua vez de jogar</span>
-                    </div> 
-                </div>
-            </div>
-            <div>
-             <button class="des" @click="openModal('des')">Desistencia</button>
-             <button class="emp" @click="openModal('emp')">Comum acordo</button>
-            </div>
-        <!-- </div> -->
-        <modal-iniciacao
-            ref="modalIniciacao"
-            v-show="isModalIniciacaoVisible"
-        />
-        <modal-choose-piece
-            ref="modalChoosePiece"
-            v-show="isModalChoosePieceVisible"
-        />
-         <modal-promo-piece
-        ref="ModalPromoPiece"
-        v-show="isModalPromoVisible"
-        />
-        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
-        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
-         <modal-confirmation ref="modalConfirmation" v-show="isModalConfirmationVisible"/>
-        <toast ref="toast"/>
-    </div>
-    <!-- VISÃO DO JOGADOR PEÇAS PRETAS -->
-    <div v-else class="containerFull">
-        <!-- <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}"> -->
-            <div class="horizontal-position">
-                <div>1</div>
-                <div>2</div>
-                <div>3</div>
-                <div>4</div>
-                <div>5</div>
-                <div>6</div>
-                <div>7</div>
-                <div>8</div>
-            </div>
-            <div class="vertical-position">
-                <div>A</div>
-                <div>B</div>
-                <div>C</div>
-                <div>D</div>
-                <div>E</div>
-                <div>F</div>
-                <div>G</div>
-                <div>H</div>
-            </div>
-            <div class="container">   
+            
+            <div class="container" v-else>   
                 <div class="row line-2">
                     <div id="A1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
                     <div id="B1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_branco.png') + ')' }"></div>
@@ -244,6 +200,7 @@
                     <div id="H8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                 </div>   
             </div>
+            
             <div class="turn">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
                     <div class="centered" :class="{'black':  this.blackTurn}">
@@ -255,10 +212,10 @@
                 </div>
             </div>
             <div>
-             <button class="des" @click="openModal('des')">Desistencia</button>
-             <button class="emp" @click="openModal('emp')">Comum acordo</button>
+                <button class="des" @click="openModal('des')">Desistencia</button>
+                <button class="emp" @click="openModal('emp')">Comum acordo</button>
             </div>
-        <!-- </div> -->
+        </div>
         <modal-iniciacao
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
@@ -268,12 +225,21 @@
             v-show="isModalChoosePieceVisible"
         />
         <modal-promo-piece
-        ref="ModalPromoPiece"
-        v-show="isModalPromoVisible"
+            ref="ModalPromoPiece"
+            v-show="isModalPromoVisible"
         />
-        <modalResultado ref="modalResultado" v-show="isModalResultadoVisible"/>
-        <modalWait ref="modalWait" v-show="isModalWaitVisible"/>
-        <modal-confirmation ref="modalConfirmation" v-show="isModalConfirmationVisible"/>
+        <modalResultado 
+            ref="modalResultado" 
+            v-show="isModalResultadoVisible"
+        />
+        <modalWait 
+            ref="modalWait" 
+            v-show="isModalWaitVisible"
+        />
+        <modal-confirmation 
+            ref="modalConfirmation" 
+            v-show="isModalConfirmationVisible"
+        />
         <toast ref="toast"/>
     </div>
 </template>
@@ -687,67 +653,74 @@
     }
 
     .containerFull {
-        width: 100%;
-        margin-top: 5px;
-        
+        background:rgba(26, 25, 25, 0.637); 
+        position:fixed; 
+        width:100%; 
+        height:100%; 
+        top:0; 
+        left:0;
     }
 
     /******** Indicação das casas no tabuleiro ********/
     .vertical-position {
         float: right;
         text-align: center;
-        font-size: 2em;
+        font-size: 2vw;
         justify-content: space-between;
         display: flex;
-        margin-left: 22%;
+        margin-left: 28.3%;
         position: absolute;
+        color:white; 
+        top: 0.5vw;
     }
     .vertical-position div
     {
         float: right;
-        width: 82px;
+        width: 5.42vw;
     }
     .horizontal-position
     {
         position: absolute;
-        margin-left: 20%;
-        margin-top: 62px;
-        font-size: 2em;
+        margin-left: 26%;
+        margin-top: 4vw;
+        font-size: 2vw;
         text-align: center;
+        color:white;
     }
     .horizontal-position div
     {
-        height: 82px;
+        height: 5.5vw;
     }
 
     /*******************  Tabuleiro ********************/
     .container {
-        border: 3px solid #000;
-        width: 662px;
-        height: 662px;
-        border-radius: 5px;
-        cursor: pointer;
-        float: right;
-        position: absolute;
-        margin-top: 40px;
-        margin-left: 22%;
+        width: 43.71vw; 
+        height: 43.71vw; 
+        margin:auto;
+        margin-top: 2.8vw; 
+        padding: 0.1vw 0.1vw 0.1vw 0.1vw;
+        background-color:black;
+        border-radius: 0.3vw;
+        box-shadow: 0 0 6vw 1vw black, 0 2.5vw 10vw 0 black;
     }
     .row {
         clear: both;
+        align-items: center;
+        justify-content: center;
     }
     .row div {
-        float: left;
-        width: 82px;
-        height: 82px;
-        border-left: 1.5px solid #000;
-        border-bottom: 1.5px solid #000;
-        text-align: center;
-        font-size: 350%;
+        width:5.24vw; 
+        height:5.24vw; 
+        float:left; 
+        margin:0.1vw; 
+        font-size: 48px; 
+        text-align:center;
         background-image:-moz-linear-gradient();        
         background-repeat: no-repeat;
         background-position-y: center;
         background-position-x: right;
         background-size: 100%;
+        border-radius: 0.1vw;
     }
     .row img
     {
@@ -784,22 +757,28 @@
     }
 
     /********************* demais estilos ***********************/
-    .blur-content{
+    .blur-content
+    {
         filter: blur(5px); 
+    }
+    .content-height-blur
+    {
+        height: 100%;
     }
 
     /****************** card de turno ************************/
     .turn{
         float: right;
         text-align: center;
-        font-size: 2em;
+        font-size: 2vw;
         justify-content: space-between;
         display: flex;
-        margin-left: 70%;
+        margin-left: 74%;
         position: absolute;
         width: 25%;
         height: 0;
         padding-bottom: 38%;
+        top: 3%;
     }
     .turn-square{
         position: absolute;
@@ -815,10 +794,10 @@
         margin-right: -0.25em;
     }
     .my-turn{
-        border: 5px solid #03ff2d;
+        border: 0.5vw inset #03ff2d;
     }
     .opponent-turn{
-        border: 5px solid #ff0404;
+        border: 0.5vw inset #ff0404;
     }
     
     .centered {
@@ -826,6 +805,8 @@
         vertical-align: middle;
         width: 100%;
         height: 100%;
+        color: #000;
+        background-color:#ffff;
     }
     .centered h3,
     .centered span
