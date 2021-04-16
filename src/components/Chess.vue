@@ -200,6 +200,11 @@
                     <div id="H8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                 </div>   
             </div>
+
+            <div class="informations">
+                <img src="../assets/imgs/dog_in_chess.png">
+                <h3 v-if="this.idGame">SALA {{this.idGame}}</h3>
+            </div>
             
             <div class="turn">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
@@ -845,15 +850,46 @@
         cursor: pointer;
         box-shadow: 0 0 0.5vw 0.3vw black;
     }
-    .emp{
+    .emp
+    {
         background-color: white;
         border: 0.3vw solid #cd07ff;
         color: #af05da;
     }
-    .des{
+    .des
+    {
         background-color: white;
         border: 0.3vw solid #f80606;
         color: #db2209;
         
+    }
+    /****************** card de turno ************************/
+    .informations
+    {
+        float: right;
+        text-align: center;
+        font-size: 2vw;
+        justify-content: space-between;
+        display: flex;
+        position: absolute;
+        width: 25%;
+        padding-bottom: 38%;
+        top: 3%;
+        display: block;
+    }
+    .informations img
+    {
+        margin: 0 0.5em 0 0.5em;
+        width: 20vw;
+        border-radius: 0.4vw;
+        opacity: 0.5;
+    }
+    .informations img:hover {
+        opacity: 1.0;
+    }
+    .informations h3
+    {
+        color:white;
+        text-shadow: 1px 1px 2px black, 0 0 1em black, 0 0 0.2em black;
     }
 </style>
