@@ -200,6 +200,11 @@
                     <div id="H8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                 </div>   
             </div>
+
+            <div class="informations">
+                <img src="../assets/imgs/dog_in_chess.png">
+                <h3 v-if="this.idGame">SALA {{this.idGame}}</h3>
+            </div>
             
             <div class="turn">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
@@ -211,9 +216,10 @@
                     </div> 
                 </div>
             </div>
+
             <div class="button-area">
-                <button class="des" :class="{'disabled': !this.turn}" @click="openModal('des')">Desistencia</button>
-                <button class="emp" :class="{'disabled': !this.turn}" @click="openModal('emp')">Comum acordo</button>
+                <button class="des" :class="{'disabled': !this.turn}" @click="openModal('des')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn}" @click="openModal('emp')">COMUM ACORDO</button>
             </div>
 
         </div>
@@ -759,7 +765,7 @@
         padding: 0.1vw 0.1vw 0.1vw 0.1vw;
         background-color:black;
         border-radius: 0.3vw;
-        box-shadow: 0 0 6vw 1vw black, 0 2.5vw 10vw 0 black;
+        box-shadow: 0 0 6vw 3vw black;
     }
     .row {
         clear: both;
@@ -879,32 +885,72 @@
     /****************** botões de ações ************************/
     .button-area
     {
+        float: right;
+        text-align: center;
+        font-size: 2vw;
+        justify-content: space-between;
+        display: block;
         margin-left: 74%;
         position: absolute;
+        width: 25vw;
+        height: 0;
+        padding-bottom: 38%;
+        top: 65%;
+    }
+    .button-area button
+    {
+        font-size: 1.3vw;
+        font-weight: 800;
+        width: 23vw;
+        padding: 0.5em 0.1em;
+        margin: 1em;
+        cursor: pointer;
+        box-shadow: 0 0 0.5vw 0.3vw black;
+    }
+    .emp
+    {
+        background-color: white;
+        border: 0.3vw solid #cd07ff;
+        color: #af05da;
+    }
+    .des
+    {
+        background-color: white;
+        border: 0.3vw solid #f80606;
+        color: #db2209;
+        
+    }
+    /****************** card de turno ************************/
+    .informations
+    {
+        float: right;
+        text-align: center;
+        font-size: 2vw;
+        justify-content: space-between;
+        display: flex;
+        position: absolute;
         width: 25%;
+        padding-bottom: 38%;
         top: 3%;
+        display: block;
     }
-    .emp{
-        background:#29bb89 ;
-        margin-top:45%;
-        width:40%;
-        font-size: 1.2rem;
-        margin-left: 2%;
-       
-        
-        cursor: pointer;
+    .informations img
+    {
+        margin: 0 0.5em 0 0.5em;
+        width: 20vw;
+        border-radius: 0.4vw;
+        opacity: 0.5;
     }
-    .des{
-        background:#ffe268 ;
-        margin-top:45%;
-        width:40%;
-        font-size: 1.2rem;
-        
-         
-        cursor: pointer;
+    .informations img:hover {
+        opacity: 1.0;
+    }
+    .informations h3
+    {
+        color:white;
+        text-shadow: 1px 1px 2px black, 0 0 1em black, 0 0 0.2em black;
     }
     .disabled
-  {
-    opacity: .2;
-  }
+    {
+        opacity: .2;
+    }
 </style>
