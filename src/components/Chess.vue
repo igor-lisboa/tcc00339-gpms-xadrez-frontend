@@ -218,8 +218,8 @@
             </div>
 
             <div class="button-area">
-                <button class="des" @click="openModal('des')">DESISTÊNCIA</button>
-                <button class="emp" @click="openModal('emp')">COMUM ACORDO</button>
+                <button class="des" :class="{'disabled': !this.turn}" @click="openModal('des')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn}" @click="openModal('emp')">COMUM ACORDO</button>
             </div>
 
         </div>
@@ -345,7 +345,7 @@
                                         });
 
                                         if(this.gameMode == 0){
-                                            this.$refs.modalWait.show(this.idGame);
+                                            this.$refs.modalWait.show("Sala " + this.idGame+ " criada. Na espera do adversário entrar na sala");
                                             this.isModalWaitVisible = true;
                                         }
 
@@ -619,12 +619,30 @@
                         document.getElementById(this.kingSquare).classList.add("check");
                     }
                 })
+                this.socket.on("empateProposto",(data)=>{
+                    console.log(data)
+                     this.openModal("propostaemp")
+                })
+                this.socket.on("empatePropostoResposta",(data)=>{
+                    console.log("resposta", data)
+                   this.isModalWaitVisible=false
+                     
+                })
+                this.socket.on("jogoFinalizado",(data)=>{
+                    console.log("resposta fin", data)
+                   this.isModalWaitVisible=false
+                     
+                })
 
             });
 
             },
             openModal:function(value){
-                if(value== "des"){
+                 const headers = {
+                    'lado': this.playerconf.ladoId
+                    }
+                switch (value) {   
+                case"des":
                    this.$refs.modalConfirmation.show({
                                 title: 'Vai desistir',
                                 message: 'Confirme sua desistencia do jogo?',
@@ -633,15 +651,54 @@
                             }).then(async (result) =>{
                                 console.log(result)
                             })
-                }else{
+                break;
+                case "emp":
                     this.$refs.modalConfirmation.show({
                                 title: 'Pediu arrego',
                                 message: 'Deseja pedir empate para o  jogo?',
                                 type: 'create',
                                 codeRoom: undefined
                             }).then(async (result) =>{
-                                console.log(result)
+                                if(result){
+                                    try{
+                                        http.put("/jogos/"+this.idGame+"/empate/propoe",{},{ headers: headers })         //chama endpoint de escolha de peça
+                                        .then(response=>{
+                                            response
+                                             this.$refs.modalWait.show("Esperando a resposta do adversario ");
+                                            this.isModalWaitVisible = true;
+                                        }
+                                        )
+                                    }catch(error){
+                                        this.$refs.toast.show({
+                                         message: 'Erro no envio da proposta empate',
+                                        type: 'error'
+                                        });
+                                    }   
+                                }
+                                this.isModalConfirmationVisible=false;
                             })
+                break;
+                case"propostaemp":
+                   this.$refs.modalConfirmation.show({
+                                title: 'Oponente jogou a toalha',
+                                message: 'Aceita o pedido de empate?',
+                                type: 'create',
+                                codeRoom: undefined
+                            }).then(async (result) =>{
+                                
+                                    try{
+                                        http.post("/jogos/"+this.idGame+"/empate/responde",result,{ headers: headers })         //chama endpoint de escolha de peça
+                                        .then(response=>console.log(response))
+                                    }catch(error){
+                                        this.$refs.toast.show({
+                                         message: 'Erro no envio da resposta da proposta',
+                                        type: 'error'
+                                        });
+                                    }   
+                            
+                                this.isModalConfirmationVisible=false;
+                            })
+                break;
                 }
                  this.isModalConfirmationVisible = true;
             }
@@ -891,5 +948,9 @@
     {
         color:white;
         text-shadow: 1px 1px 2px black, 0 0 1em black, 0 0 0.2em black;
+    }
+    .disabled
+    {
+        opacity: .2;
     }
 </style>
