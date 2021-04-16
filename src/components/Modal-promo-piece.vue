@@ -31,10 +31,6 @@
                   <input type="radio" id="cavalo_branco" name="optPromoB" value="4">
                     <label for="cavalo_branco"  title="Cavalo">
                       <img src="../assets/imgs/pecas/cavalo_branco.png">
-                    </label>
-                  <input type="radio" id="peao_branco" name="optPromoB" value="5">
-                    <label for="peao_branco" title="Peão">
-                      <img src="../assets/imgs/pecas/peao_branco.png">
                     </label>    
                 </div>
                 <div class="select-piece-area" v-else> 
@@ -54,10 +50,6 @@
                     <label for="cavalo_preto" title="Cavalo">
                       <img src="../assets/imgs/pecas/cavalo_preto.png">
                     </label>
-                  <input type="radio" id="peao_preto" name="optPromoP" value="5">
-                    <label for="peao_preto" title="Peão">
-                      <img src="../assets/imgs/pecas/peao_preto.png">
-                    </label> 
                 </div> 
                 <div>
                   <button class="confirm" @click="confirmar">CONFIRMAR ESCOLHA</button> 
