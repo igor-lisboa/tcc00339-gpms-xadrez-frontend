@@ -617,12 +617,16 @@
                     console.log(data)
                      this.openModal("propostaemp")
                 })
-                 this.socket.on("empatePropostoResposta",(data)=>{
+                this.socket.on("empatePropostoResposta",(data)=>{
                     console.log("resposta", data)
                    this.isModalWaitVisible=false
                      
-                 })
-                
+                })
+                this.socket.on("jogoFinalizado",(data)=>{
+                    console.log("resposta fin", data)
+                   this.isModalWaitVisible=false
+                     
+                })
 
             });
 
