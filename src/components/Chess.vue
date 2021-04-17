@@ -229,8 +229,8 @@
             >
 
             <div class="button-area" v-if="this.idGame">
-                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('des')">DESISTÊNCIA</button>
-                <button class="emp" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('emp')">COMUM ACORDO</button>
+                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('desistencia')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('empate')">COMUM ACORDO</button>
             </div>
 
         </div>
@@ -625,63 +625,99 @@
                     'lado': this.playerconf.ladoId
                     }
                 switch (value) {   
-                case"des":
-                   this.$refs.modalConfirmation.show({
-                                title: 'Vai desistir',
-                                message: 'Confirme sua desistencia do jogo?',
-                                type: 'create',
-                                codeRoom: undefined
-                            }).then(async (result) =>{
-                                console.log(result)
-                            })
-                break;
-                case "emp":
-                    this.$refs.modalConfirmation.show({
-                                title: 'Pediu arrego',
-                                message: 'Deseja pedir empate para o  jogo?',
-                                type: 'create',
-                                codeRoom: undefined
-                            }).then(async (result) =>{
-                                if(result){
-                                    try{
-                                        http.put("/jogos/"+this.idGame+"/empate/propoe",{},{ headers: headers })         //chama endpoint de escolha de peça
-                                        .then(response=>{
-                                            response
-                                             this.$refs.modalWait.show("Esperando a resposta do adversario ");
-                                            this.isModalWaitVisible = true;
-                                        }
-                                        )
-                                    }catch(error){
-                                        this.$refs.toast.show({
-                                         message: 'Erro no envio da proposta empate',
-                                        type: 'error'
-                                        });
-                                    }   
-                                }
-                                this.isModalConfirmationVisible=false;
-                            })
-                break;
-                case"propostaemp":
-                   this.$refs.modalConfirmation.show({
-                                title: 'Oponente jogou a toalha',
-                                message: 'Aceita o pedido de empate?',
-                                type: 'create',
-                                codeRoom: undefined
-                            }).then(async (result) =>{
-                                
-                                    try{
-                                        http.post("/jogos/"+this.idGame+"/empate/responde",result,{ headers: headers })         //chama endpoint de escolha de peça
-                                        .then(response=>console.log(response))
-                                    }catch(error){
-                                        this.$refs.toast.show({
-                                         message: 'Erro no envio da resposta da proposta',
-                                        type: 'error'
-                                        });
-                                    }   
+                    case"desistencia":
+                        this.$refs.modalConfirmation.show({
+                            title: 'Está desistindo',
+                            message: 'Confirma sua desistencia do jogo?'
+                        });
+                        break;
+                    case "empate":
+                        this.$refs.modalConfirmation.show({
+                            title: 'Pediu arrego',
+                            message: 'Deseja pedir empate para o  jogo?'
+                        }).then(async (result) =>{
+                            if(result){
+                                try{
+                                    http.put("/jogos/"+this.idGame+"/empate/propoe",{},{ headers: headers })         //chama endpoint de proposta de empate comum acordo
+                                    .then(response=>{
+                                        response
+                                        this.$refs.modalWait.show("Esperando a resposta do adversario");
+                                        this.isModalWaitVisible = true;
+                                    });
+                                }catch(error){
+                                    this.$refs.toast.show({
+                                    message: 'Erro no envio da proposta empate',
+                                    type: 'error'
+                                    });
+                                }   
+                            }
+                            this.isModalConfirmationVisible=false;
+                        })
+                        break;
+                    case"propostaEmpate":
+                        this.$refs.modalConfirmation.show({
+                            title: 'Oponente jogou a toalha',
+                            message: 'Aceita o pedido de empate?'
+                        }).then(async (result) =>{
                             
-                                this.isModalConfirmationVisible=false;
-                            })
-                break;
+                                try{
+                                    http.post("/jogos/"+this.idGame+"/empate/responde",result,{ headers: headers })         //chama endpoint de resposta de proposta de empate comum acordo
+                                    .then(response=>console.log(response))
+                                }catch(error){
+                                    this.$refs.toast.show({
+                                    message: 'Erro no envio da resposta da proposta',
+                                    type: 'error'
+                                    });
+                                }   
+                        
+                            this.isModalConfirmationVisible=false;
+                        })
+                        break;
+                    case "revanche":
+                        this.$refs.modalConfirmation.show({
+                            title: 'Vai encarar de novo',
+                            message: 'Deseja informar que quer uma revanche?'
+                        }).then(async (result) =>{
+                            if(result){
+                                try{
+                                    http.put("/jogos/"+this.idGame+"/reset/propoe",{},{ headers: headers })         //chama endpoint de proposta de revanche
+                                    .then(response=>{
+                                        response
+                                        this.$refs.modalWait.show("Esperando a resposta do adversario");
+                                        this.isModalWaitVisible = true;
+                                    });
+                                }catch(error){
+                                    this.$refs.toast.show({
+                                    message: 'Erro no envio da proposta de revanche',
+                                    type: 'error'
+                                    });
+                                }   
+                            }
+                            this.isModalConfirmationVisible=false;
+                        })
+                        break;
+                    case "propostaRevanche":
+                        this.$refs.modalConfirmation.show({
+                            title: 'Oponente tá nervoso',
+                            message: 'Aceita o pedido de revanche?'
+                        }).then(async (result) =>{
+                                try{
+                                    http.post("/jogos/"+this.idGame+"/reset/responde",result,{ headers: headers });       //chama endpoint de resposta de revanche
+                                    if(result){
+                                        this.resetBoard();
+                                    }else{
+                                        location.reload();
+                                    }
+                                }catch(error){
+                                    this.$refs.toast.show({
+                                        message: 'Erro no envio da resposta da revanche',
+                                        type: 'error'
+                                    });
+                                }   
+                        
+                            this.isModalConfirmationVisible=false;
+                        })
+                        break;
                 }
                  this.isModalConfirmationVisible = true;
             },
@@ -691,15 +727,71 @@
                 this.information = !this.information;
             },
 
-            //criação do socket
+            // resetar tabuleiro 
+            resetBoard(){
+                let color = "_branco";
+                let hp = ["1", "2", "3", "4", "5", "6", "7", "8"];
+                let vp = ["A", "B", "C", "D", "E", "F", "G", "H"];
+                
+                for (var h = 0; h < hp.length; h++) {
+                    for (var v = 0; v < vp.length; v++) {
+
+                        if(hp[h] == "2")
+                        {
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')';
+                            continue;
+                        }
+                        if(hp[h] == "7")
+                        {
+                            color = "_preto";
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')';
+                            continue;
+                        }
+                        if(["3", "4", "5", "6"].includes(hp[h]))
+                        {
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = '';
+                            continue;
+                        }
+                        
+                        switch (vp[v]){
+                            case "A":
+                            case "H":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/torre' + color + '.png') + ')';
+                                break;
+                            case "B": 
+                            case "G":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/cavalo' + color + '.png') + ')';
+                                break;
+                            case "C": 
+                            case "F":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/bispo' + color + '.png') + ')';
+                                break;
+                            case "D":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/rainha' + color + '.png') + ')';
+                                break;
+                            case "E":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/rei' + color + '.png') + ')';
+                                break;
+                        }
+                        
+                    }
+                }
+                this.turn = this.playerconf.ladoId == 0 ? true : false;
+                this.kingSquare = this.playerconf.ladoId == 0 ? "E1" : "E8";
+                               
+            },
+
+            //criação do socket e eventos
             createSocket: function(){          
             this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
             this.socket.on("connect", () => {
 
+                //adversário entrou na sala
                 this.socket.on('adversarioEntrou', () =>{
                     this.isModalWaitVisible = false;
                 })
 
+                // adversário realizaou jogada
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
                     this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
@@ -707,18 +799,44 @@
                         document.getElementById(this.kingSquare).classList.add("check");
                     }
                 })
+
+                // adversário propos empate comum acordo
                 this.socket.on("empateProposto", () =>{
-                     this.openModal("propostaemp")
-                })
-                this.socket.on("empatePropostoResposta", () =>{
-                   this.isModalWaitVisible=false
-                     
-                })
-                this.socket.on("jogoFinalizado", () =>{
-                   this.isModalWaitVisible=false
-                     
+                    this.openModal("propostaEmpate")
                 })
 
+                // adversário recusou empate comum acordo
+                this.socket.on("empatePropostoResposta", () =>{
+                   this.isModalWaitVisible=false  
+                })
+
+                // jogo foi encerrado por vitória ou empate
+                this.socket.on("jogoFinalizado", () =>{
+                   this.isModalWaitVisible = false;
+                   this.$refs.modalResultado.gameResult('win').then( async(result) =>{
+                        if(result == "rematch"){
+                            this.openModal("revanche");
+                        }else{
+                            location.reload();
+                        }
+                    })
+                })
+
+                // adversário solicitou revanche
+                this.socket.on("resetProposto", () =>{
+                    this.openModal("propostaRevanche");
+                })
+
+                // adversário recusou revanche
+                this.socket.on("resetPropostoResposta", (data) =>{
+                    this.isModalWaitVisible = false;
+                    if(data.resposta){
+                       this.resetBoard();
+                    }else{
+                       location.reload();
+                    }
+                     
+                })
             });
 
             }
