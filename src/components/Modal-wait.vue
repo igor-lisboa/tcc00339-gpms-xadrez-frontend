@@ -34,7 +34,7 @@
     methods: {
         // função de criação do modal de confirmação
         show(message) {
-            this.title = "Esperando adversário";
+            this.title = "Esperando adversário...";
             this.message = message;
         }
     }

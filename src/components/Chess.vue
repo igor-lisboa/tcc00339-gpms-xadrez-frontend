@@ -531,7 +531,6 @@
 
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){ 
-                console.log(item) 
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
                 document.getElementById(item.casaDestino.casa).classList.remove("catch");
                 document.getElementById(item.casaDestino.casa).title = "";
@@ -578,7 +577,6 @@
                         var pieceBackgroundChoosed = undefined
                         await this.$refs.ModalPromoPiece.show(this.playerconf.ladoId).then(result => {
                             pieceChoosed = result.pieceValue;
-                            console.log(pieceChoosed)
                             try
                             {
                                 http.post("/jogos/"+this.idGame+"/promove-peao/"+pieceChoosed,{},{ headers: headers })         //chama endpoint de escolha de peça
@@ -627,17 +625,14 @@
                         document.getElementById(this.kingSquare).classList.add("check");
                     }
                 })
-                this.socket.on("empateProposto",(data)=>{
-                    console.log(data)
+                this.socket.on("empateProposto", () =>{
                      this.openModal("propostaemp")
                 })
-                this.socket.on("empatePropostoResposta",(data)=>{
-                    console.log("resposta", data)
+                this.socket.on("empatePropostoResposta", () =>{
                    this.isModalWaitVisible=false
                      
                 })
-                this.socket.on("jogoFinalizado",(data)=>{
-                    console.log("resposta fin", data)
+                this.socket.on("jogoFinalizado", () =>{
                    this.isModalWaitVisible=false
                      
                 })
