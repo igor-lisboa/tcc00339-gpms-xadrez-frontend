@@ -202,15 +202,8 @@
             </div>
 
             <div class="informations" v-if="this.idGame">
-                <img src="../assets/imgs/dog_in_chess.png" 
-                    title='Desenvolvedores: 
-                    Caio Wey 
-                    Igor Lisboa 
-                    Matheus Baldas 
-                    Milena Veríssimo 
-                    Victor Matheus Pereira 
-                    Victor Marques'
-                >
+                <img v-if='this.information' src="../assets/imgs/dog_in_chess.png" title='Jogar é fácil...' @click="changeInformation()">
+                <img v-else src="../assets/imgs/dog_in_study.png" title='...sabendo as regras' @click="changeInformation()">
                 <h3>SALA {{this.idGame}}</h3>
             </div>
             
@@ -224,6 +217,16 @@
                     </div> 
                 </div>
             </div>
+
+            <img src="../assets/imgs/dog_icon.png" class="icon-equip"  v-if="this.idGame"
+                title='Desenvolvedores: 
+                    Caio Wey 
+                    Igor Lisboa 
+                    Matheus Baldas 
+                    Milena Veríssimo 
+                    Victor Matheus Pereira 
+                    Victor Marques'
+            >
 
             <div class="button-area" v-if="this.idGame">
                 <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('des')">DESISTÊNCIA</button>
@@ -299,7 +302,8 @@
                 //configuração jogador
                 player: "branco",
                 playerconf:{ladoId:0, tipoId:0},
-                kingSquare: undefined, 
+                kingSquare: undefined,
+                information: true, 
                 //configuração jogadas
                 jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
                 mapJogada: new Map()              
@@ -308,8 +312,9 @@
         destroyed(){
             this.socket.on("disconnect");
         },
+        // iniciar modal de iniciação ao carregar página 
         mounted(){
-            this.showModalIniciacao();                 // iniciar modal de iniciação ao carregar página    
+            this.showModalIniciacao();                    
         },
         methods: { 
 
@@ -609,37 +614,7 @@
                 this.blackTurn = !this.blackTurn;
             },
 
-            //criação do socket
-            createSocket: function(){          
-            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
-            this.socket.on("connect", () => {
-
-                this.socket.on('adversarioEntrou', () =>{
-                    this.isModalWaitVisible = false;
-                })
-
-                this.socket.on("jogadaRealizada",(data) =>{
-                    this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
-                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
-                    if(data.chequeLadoAtual){
-                        document.getElementById(this.kingSquare).classList.add("check");
-                    }
-                })
-                this.socket.on("empateProposto", () =>{
-                     this.openModal("propostaemp")
-                })
-                this.socket.on("empatePropostoResposta", () =>{
-                   this.isModalWaitVisible=false
-                     
-                })
-                this.socket.on("jogoFinalizado", () =>{
-                   this.isModalWaitVisible=false
-                     
-                })
-
-            });
-
-            },
+            // abrir modal dos botões de ações desistência e comum acordo
             openModal:function(value){
                  const headers = {
                     'lado': this.playerconf.ladoId
@@ -704,6 +679,43 @@
                 break;
                 }
                  this.isModalConfirmationVisible = true;
+            },
+
+            // alteração de informação
+            changeInformation(){
+                this.information = !this.information;
+            },
+
+            //criação do socket
+            createSocket: function(){          
+            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket.on("connect", () => {
+
+                this.socket.on('adversarioEntrou', () =>{
+                    this.isModalWaitVisible = false;
+                })
+
+                this.socket.on("jogadaRealizada",(data) =>{
+                    this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
+                    if(data.chequeLadoAtual){
+                        document.getElementById(this.kingSquare).classList.add("check");
+                    }
+                })
+                this.socket.on("empateProposto", () =>{
+                     this.openModal("propostaemp")
+                })
+                this.socket.on("empatePropostoResposta", () =>{
+                   this.isModalWaitVisible=false
+                     
+                })
+                this.socket.on("jogoFinalizado", () =>{
+                   this.isModalWaitVisible=false
+                     
+                })
+
+            });
+
             }
             
         }
@@ -885,6 +897,19 @@
         color: #ffff;
         background-color:#000;
     }
+    /****************** informações da equipe ************************/
+    .icon-equip
+    {
+        float: right;
+        justify-content: space-between;
+        display: block;
+        margin-left: 82.5%;
+        position: absolute;
+        width: 10vw;
+        padding-bottom: 38%;
+        top: 35%;
+        opacity: 0.9;
+    }
     /****************** botões de ações ************************/
     .button-area
     {
@@ -923,7 +948,7 @@
         color: #db2209;
         
     }
-    /****************** card de turno ************************/
+    /****************** area de informações ************************/
     .informations
     {
         float: right;
