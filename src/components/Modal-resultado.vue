@@ -19,64 +19,64 @@
               <div class="message">
                   <label>{{message}}</label>
                   <div>
-                      <button class="rematch" @click="rematch">REVANCHE</button>
-                      <button class="play-again" @click="newGame">NOVO JOGO</button> 
+                    <button class="rematch" :class="{'disabled': result == 'win'}" :disabled="result == 'win'" @click="rematch">REVANCHE</button>
+                    <button class="play-again" @click="newGame">NOVO JOGO</button> 
                   </div>
               </div>          
           </div>
         </div>
       </div>
     </transition>
-    <modalInitiation ref="modalIniciacao" v-show="isIniciationVisible"/>
   </div>
 </template>
 
 <script>
-    import modalInitiation from "./Modal-iniciacao";
+  export default {
+    name: 'modalResultado',
+    data() {
+      return { 
+        title: null,
+        message: null,
+        result: undefined,
+        resolvePromise: undefined,
+        rejectPromise: undefined
+      }
+    },
+    methods: {
+      // caso queira criar novo jogo em uma nova sala
+      newGame() {
+        this.resolvePromise("new");
+      },
+      
+      // show modal
+      gameResult( result ) {
+        this.result = result;
+        switch(result) {
+          case 'win':
+            this.title = 'Vitória';
+            this.message = 'Parabéns pela sua vitória!'
+            break;
+          case 'lose':
+            this.title = 'Derrota';
+            this.message = 'Não foi dessa vez! Tente novamente!'
+            break;
+          case 'draw':
+            this.title = 'Empate';
+            this.message = 'Você e seu adversário empataram nesse jogo!'
+            break;
+        }
+        return new Promise((resolve, reject) => {
+          this.resolvePromise = resolve;
+          this.rejectPromise = reject;
+        })
+      },
 
-    export default {
-        data() {
-          return { 
-            title: null,
-            message: null,
-            isIniciationVisible: false,
-            result: undefined
-          }
-        },
-        name: 'modalResultado',
-        components: {
-            modalInitiation
-        },
-        methods: {
-            newGame() {
-                this.isIniciationVisible = true;
-            },
-            
-            gameResult({ result }) {
-              this.result = result;
-              switch(result) {
-                case 'win':
-                  this.title = 'Vitória';
-                  this.message = 'Parabéns pela sua vitória!'
-                  break;
-                case 'lose':
-                  this.title = 'Derrota';
-                  this.message = 'Não foi dessa vez! Tente novamente!'
-                  break;
-                case 'draw':
-                  this.title = 'Empate';
-                  this.message = 'Você e seu adversário empataram nesse jogo!'
-                  break;
-              }
-            
-              return Promise.resolve(result);
-            },
-
-            rematch() {
-              alert('Chegou o seu momento de brilhar')
-            }
-        },
-    }
+      // caso queira revanche
+      rematch() {
+        this.resolvePromise("rematch");
+      }
+  },
+  }
 
 </script>
 
@@ -150,5 +150,9 @@
     background-color: transparent;
     border: 1px solid #fc4e32;
     color: #fc4e32;
+  }
+  .disabled
+  {
+    opacity: .2;
   }
 </style>
