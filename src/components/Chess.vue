@@ -299,6 +299,7 @@
                 movePhase: false,
                 turn: undefined,
                 blackTurn: false,
+                blockClick: false,
                 //configuração jogador
                 player: "branco",
                 playerconf:{ladoId:0, tipoId:0},
@@ -434,8 +435,8 @@
             //função de gerenciamento da escolha de peça
             async getPosition(ev){
 
-                //verificar se é o turno do usuário
-                if(!this.turn){
+                //verificar se é o turno do usuário ou se jogada está em andamento
+                if(!this.turn || this.blockClick){
                     return;
                 }
 
@@ -473,11 +474,9 @@
                     ); 
                     
                 }else{    //fase de movimento de peça
-                    
-                    if( ev.target.style.backgroundImage.includes(this.player)  ){   //caso tenha escolhido outra de suas peças
-                        
-                        JSON.parse(this.jogada.posicoes).forEach(this.removePaint); 
 
+                    if( ev.target.style.backgroundImage.includes(this.player) && this.jogada.posicao != ev.target.id ){   //caso tenha escolhido outra de suas peças
+                        
                         this.jogada.posicaoPrevia = ev.target.id 
                         
                         this.jogada.peca = ev.target.style.backgroundImage;
@@ -487,6 +486,8 @@
                         ).then(
                             json => {
                                 if(json.data != null){
+                                    JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
+
                                     this.mapJogada = new Map();
                                     json.data.data.forEach(this.paintNextPos);
                                     this.jogada.posicoes = JSON.stringify(json.data.data);
@@ -504,8 +505,11 @@
 
                     let actualPos = ev.target.id ;
                     ev.target.style.backgroundImage = this.jogada.peca;
+                    this.blockClick = true;
+                    
                     await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
                         .then( response => response);
+                    
                     this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null);
 
                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
@@ -611,6 +615,7 @@
                 }
 
                 this.turn = !this.turn;
+                this.blockClick = false;
                 this.blackTurn = !this.blackTurn;
             },
 
