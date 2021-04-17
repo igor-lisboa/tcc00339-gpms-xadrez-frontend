@@ -474,7 +474,7 @@
                     
                 }else{    //fase de movimento de peça
                     
-                    if( ev.target.style.backgroundImage.includes(this.player)  ){   //caso tenha escolhido outra de suas peças
+                    if( ev.target.style.backgroundImage.includes(this.player) ){   //caso tenha escolhido outra de suas peças
                         
                         JSON.parse(this.jogada.posicoes).forEach(this.removePaint); 
 
@@ -686,7 +686,64 @@
                 this.information = !this.information;
             },
 
-            //criação do socket
+            // resetar tabuleiro 
+            resetBoard(){
+                let color = "_branco";
+                let hp = ["1", "2", "3", "4", "5", "6", "7", "8"];
+                let vp = ["A", "B", "C", "D", "E", "F", "G", "H"];
+                
+                for (var h = 0; h < hp.length; h++) {
+                    for (var v = 0; v < vp.length; v++) {
+
+                        if(hp[h] == "7"){
+                            color = "_preto";
+                        }
+
+                        if(hp[h] == "2")
+                        {
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')';
+                            continue;
+                        }
+                        if(hp[h] == "7")
+                        {
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')';
+                            continue;
+                        }
+                        if(["3", "4", "5", "6"].includes(hp[h]))
+                        {
+                            document.getElementById(vp[v] + hp[h]).style.backgroundImage = '';
+                            continue;
+                        }
+                        
+                        switch (vp[v]){
+                            case "A":
+                            case "H":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/torre' + color + '.png') + ')';
+                                break;
+                            case "B": 
+                            case "G":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/cavalo' + color + '.png') + ')';
+                                break;
+                            case "C": 
+                            case "F":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/bispo' + color + '.png') + ')';
+                                break;
+                            case "D":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/rainha' + color + '.png') + ')';
+                                break;
+                            case "E":
+                                document.getElementById(vp[v] + hp[h]).style.backgroundImage = 'url(' + require('@/assets/imgs/pecas/rei' + color + '.png') + ')';
+                                break;
+                        }
+                        
+                    }
+                }
+                this.turn = this.playerconf.ladoId == 0 ? true : false;
+                this.kingSquare = this.playerconf.ladoId == 0 ? "E1" : "E8";
+                               
+            },
+
+            //criação do socket e eventos
             createSocket: function(){          
             this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
             this.socket.on("connect", () => {
