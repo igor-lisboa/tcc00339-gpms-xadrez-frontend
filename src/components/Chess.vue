@@ -623,7 +623,7 @@
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
                     this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
-                    if(data.jogo.chequeLadoAtual){
+                    if(data.chequeLadoAtual){
                         document.getElementById(this.kingSquare).classList.add("check");
                     }
                 })
