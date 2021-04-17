@@ -201,12 +201,20 @@
                 </div>   
             </div>
 
-            <div class="informations">
-                <img src="../assets/imgs/dog_in_chess.png">
-                <h3 v-if="this.idGame">SALA {{this.idGame}}</h3>
+            <div class="informations" v-if="this.idGame">
+                <img src="../assets/imgs/dog_in_chess.png" 
+                    title='Desenvolvedores: 
+                    Caio Wey 
+                    Igor Lisboa 
+                    Matheus Baldas 
+                    Milena Veríssimo 
+                    Victor Matheus Pereira 
+                    Victor Marques'
+                >
+                <h3>SALA {{this.idGame}}</h3>
             </div>
             
-            <div class="turn">
+            <div class="turn" v-if="this.idGame">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
                     <div class="centered" :class="{'black':  this.blackTurn}">
                         <h3 v-if="this.turn">Sua vez</h3>
@@ -217,9 +225,9 @@
                 </div>
             </div>
 
-            <div class="button-area">
-                <button class="des" :class="{'disabled': !this.turn}" @click="openModal('des')">DESISTÊNCIA</button>
-                <button class="emp" :class="{'disabled': !this.turn}" @click="openModal('emp')">COMUM ACORDO</button>
+            <div class="button-area" v-if="this.idGame">
+                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('des')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('emp')">COMUM ACORDO</button>
             </div>
 
         </div>

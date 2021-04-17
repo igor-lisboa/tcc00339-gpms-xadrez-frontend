@@ -49,9 +49,9 @@
     .toast
     {
         position: fixed;
-        top: 20px;
-        left: 20px;
-        padding: 2em;
+        top: 5px;
+        left: 5px;
+        padding: 0.5em;
         overflow: hidden;
         z-index: 9999999999;
         width: 800px;
