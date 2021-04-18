@@ -518,8 +518,7 @@
                     ev.target.style.backgroundImage = this.jogada.peca;
                     this.blockClick = true;
                     
-                    await http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers })                 //acessa endpoint de criação de sala
-                        .then( response => response);
+                    http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers });                //acessa endpoint de criação de sala
                     
                     this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null);
 
@@ -639,8 +638,14 @@
                     case"desistencia":
                         this.$refs.modalConfirmation.show({
                             title: 'Está desistindo',
-                            message: 'Confirma sua desistencia do jogo?'
+                            message: 'Confirma sua desistência do jogo? (essa ação fará você sair da sala)'
+                        }).then(async (result) =>{
+                            if(result){
+                                http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                location.reload();
+                            }
                         });
+                        this.isModalConfirmationVisible=false;
                         break;
                     case "empate":
                         this.$refs.modalConfirmation.show({
@@ -673,7 +678,6 @@
                             
                                 try{
                                     http.post("/jogos/"+this.idGame+"/empate/responde", {resposta:result},{ headers: headers })         //chama endpoint de resposta de proposta de empate comum acordo
-                                    .then(response=>console.log(response))
                                 }catch(error){
                                     this.$refs.toast.show({
                                     message: 'Erro no envio da resposta da proposta',
@@ -708,12 +712,13 @@
                         })
                         break;
                     case "propostaRevanche":
+                        this.isModalResultadoVisible = false;
                         this.$refs.modalConfirmation.show({
                             title: 'Oponente tá nervoso',
                             message: 'Aceita o pedido de revanche?'
                         }).then(async (result) =>{
                                 try{
-                                    http.post("/jogos/"+this.idGame+"/reset/responde",result,{ headers: headers });       //chama endpoint de resposta de revanche
+                                    http.post("/jogos/"+this.idGame+"/reset/responde",{ resposta: result },{ headers: headers });       //chama endpoint de resposta de revanche
                                     if(result){
                                         this.resetBoard();
                                     }else{
@@ -822,15 +827,41 @@
                 })
 
                 // jogo foi encerrado por vitória ou empate
-                this.socket.on("jogoFinalizado", () =>{
-                   this.isModalWaitVisible = false;
-                   this.$refs.modalResultado.gameResult('win').then( async(result) =>{
-                        if(result == "rematch"){
-                            this.openModal("revanche");
-                        }else{
-                            location.reload();
+                this.socket.on("jogoFinalizado", (data) =>{
+
+                    this.isModalWaitVisible = false;
+
+                    let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
+
+                    if(data.jogoFinalizacao.toString().includes("Vitória") || data.jogoFinalizacao.toString().includes("Desistência")){
+                        if(!data.jogoFinalizacao.toString().includes(color)){
+                            this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
+                                if(result == "rematch"){
+                                    this.isModalResultadoVisible = false;
+                                    this.openModal("revanche");
+                                }else{
+                                    location.reload();
+                                }
+                            })
+                            this.isModalResultadoVisible = true;
+                            return;
+                        }else{ 
+                            this.$refs.modalResultado.gameResult('win').then( async() =>{
+                                location.reload();
+                            })
+                            this.isModalResultadoVisible = true;
+                            return;
                         }
-                    })
+                    }
+                    this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
+                            if(result == "rematch"){
+                                this.isModalResultadoVisible = false;
+                                this.openModal("revanche");
+                            }else{
+                                location.reload();
+                            }
+                        })
+                    this.isModalResultadoVisible = true;
                 })
 
                 // adversário solicitou revanche
@@ -840,8 +871,9 @@
 
                 // adversário recusou revanche
                 this.socket.on("resetPropostoResposta", (data) =>{
+                    console.log(data);
                     this.isModalWaitVisible = false;
-                    if(data.resposta){
+                    if(data){
                        this.resetBoard();
                     }else{
                        location.reload();
