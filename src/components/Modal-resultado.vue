@@ -60,8 +60,9 @@
             this.title = 'Derrota';
             this.message = 'Não foi dessa vez! Tente novamente!'
             break;
-          case 'draw':
-            this.title = 'Empate';
+          default:
+            this.title = result;
+            this.result = 'draw';
             this.message = 'Você e seu adversário empataram nesse jogo!'
             break;
         }

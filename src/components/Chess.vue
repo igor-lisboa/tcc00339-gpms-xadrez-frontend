@@ -638,8 +638,14 @@
                     case"desistencia":
                         this.$refs.modalConfirmation.show({
                             title: 'Está desistindo',
-                            message: 'Confirma sua desistencia do jogo?'
+                            message: 'Confirma sua desistência do jogo? (essa ação fará você sair da sala)'
+                        }).then(async (result) =>{
+                            if(result){
+                                http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                location.reload();
+                            }
                         });
+                        this.isModalConfirmationVisible=false;
                         break;
                     case "empate":
                         this.$refs.modalConfirmation.show({
@@ -712,7 +718,7 @@
                             message: 'Aceita o pedido de revanche?'
                         }).then(async (result) =>{
                                 try{
-                                    http.post("/jogos/"+this.idGame+"/reset/responde",result,{ headers: headers });       //chama endpoint de resposta de revanche
+                                    http.post("/jogos/"+this.idGame+"/reset/responde",{ resposta: result },{ headers: headers });       //chama endpoint de resposta de revanche
                                     if(result){
                                         this.resetBoard();
                                     }else{
@@ -822,31 +828,13 @@
 
                 // jogo foi encerrado por vitória ou empate
                 this.socket.on("jogoFinalizado", (data) =>{
-                    console.log(data)
-                    this.isModalWaitVisible = false;
 
-                    console.log(this.playerconf.ladoId);
+                    this.isModalWaitVisible = false;
 
                     let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
 
-                    console.log(data.jogoFinalizacao.toString())
-
-                    console.log(color)
-
-                    console.log(data.jogoFinalizacao.toString().includes(color))
-                    if(data.jogoFinalizacao.toString().includes("Vitória")){
-                        if(data.jogoFinalizacao.toString().includes(color)){
-                            this.$refs.modalResultado.gameResult('win').then( async(result) =>{
-                                if(result == "rematch"){
-                                    this.isModalResultadoVisible = false;
-                                    this.openModal("revanche");
-                                }else{
-                                    location.reload();
-                                }
-                            })
-                            this.isModalResultadoVisible = true;
-                            return;
-                        }else{
+                    if(data.jogoFinalizacao.toString().includes("Vitória") || data.jogoFinalizacao.toString().includes("Desistência")){
+                        if(!data.jogoFinalizacao.toString().includes(color)){
                             this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
                                 if(result == "rematch"){
                                     this.isModalResultadoVisible = false;
@@ -857,9 +845,15 @@
                             })
                             this.isModalResultadoVisible = true;
                             return;
+                        }else{ 
+                            this.$refs.modalResultado.gameResult('win').then( async() =>{
+                                location.reload();
+                            })
+                            this.isModalResultadoVisible = true;
+                            return;
                         }
                     }
-                    this.$refs.modalResultado.gameResult('draw').then( async(result) =>{
+                    this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
                             if(result == "rematch"){
                                 this.isModalResultadoVisible = false;
                                 this.openModal("revanche");
@@ -877,8 +871,9 @@
 
                 // adversário recusou revanche
                 this.socket.on("resetPropostoResposta", (data) =>{
+                    console.log(data);
                     this.isModalWaitVisible = false;
-                    if(data.resposta){
+                    if(data){
                        this.resetBoard();
                     }else{
                        location.reload();
