@@ -672,7 +672,7 @@
                         }).then(async (result) =>{
                             
                                 try{
-                                    http.post("/jogos/"+this.idGame+"/empate/responde",result,{ headers: headers })         //chama endpoint de resposta de proposta de empate comum acordo
+                                    http.post("/jogos/"+this.idGame+"/empate/responde", {resposta:result},{ headers: headers })         //chama endpoint de resposta de proposta de empate comum acordo
                                     .then(response=>console.log(response))
                                 }catch(error){
                                     this.$refs.toast.show({
