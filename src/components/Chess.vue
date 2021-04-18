@@ -23,7 +23,7 @@
                 <div>8</div>
             </div> 
 
-            <div class="vertical-position">
+            <div class="vertical-position" v-if="player=='branco'">
                 <div>A</div>
                 <div>B</div>
                 <div>C</div>
@@ -33,6 +33,17 @@
                 <div>G</div>
                 <div>H</div>
             </div>
+            <div class="vertical-position" v-else>
+                <div>H</div>
+                <div>G</div>
+                <div>F</div>
+                <div>E</div>
+                <div>D</div>
+                <div>C</div>
+                <div>B</div>
+                <div>A</div>
+            </div>
+
 
             <div class="container" v-if="player=='branco'">
                 <div class="row line-1">
@@ -118,86 +129,86 @@
             </div>
             
             <div class="container" v-else>   
-                <div class="row line-2">
-                    <div id="A1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
-                    <div id="B1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_branco.png') + ')' }"></div>
-                    <div id="C1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_branco.png') + ')' }"></div>
-                    <div id="D1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rainha_branco.png') + ')' }"></div>
-                    <div id="E1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rei_branco.png') + ')' }"></div>
-                    <div id="F1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_branco.png') + ')' }"></div>
-                    <div id="G1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_branco.png') + ')' }"></div>
+                <div class="row line-1">
                     <div id="H1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
+                    <div id="G1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_branco.png') + ')' }"></div>
+                    <div id="F1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_branco.png') + ')' }"></div>
+                    <div id="E1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rei_branco.png') + ')' }"></div>
+                    <div id="D1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rainha_branco.png') + ')' }"></div>
+                    <div id="C1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_branco.png') + ')' }"></div>
+                    <div id="B1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_branco.png') + ')' }"></div>
+                    <div id="A1" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_branco.png') + ')' }"></div>
                 </div>
-                <div class="row line-1">
-                    <div id="A2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="B2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="C2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="D2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="E2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="F2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
-                    <div id="G2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                <div class="row line-2">
                     <div id="H2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="G2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="F2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="E2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="D2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="C2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="B2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
+                    <div id="A2" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_branco.png') + ')' }"></div>
                 </div>
-                <div class="row line-2">
-                    <div id="A3" @click ="getPosition($event)"></div>
-                    <div id="B3" @click ="getPosition($event)"></div>
-                    <div id="C3" @click ="getPosition($event)"></div>
-                    <div id="D3" @click ="getPosition($event)"></div>
-                    <div id="E3" @click ="getPosition($event)"></div>
-                    <div id="F3" @click ="getPosition($event)"></div>
-                    <div id="G3" @click ="getPosition($event)"></div>
+                <div class="row line-1">
                     <div id="H3" @click ="getPosition($event)"></div>
-                </div>
-                <div class="row line-1">
-                    <div id="A4" @click ="getPosition($event)"></div>
-                    <div id="B4" @click ="getPosition($event)"></div>
-                    <div id="C4" @click ="getPosition($event)"></div>
-                    <div id="D4" @click ="getPosition($event)"></div>
-                    <div id="E4" @click ="getPosition($event)"></div>
-                    <div id="F4" @click ="getPosition($event)"></div>
-                    <div id="G4" @click ="getPosition($event)"></div>
-                    <div id="H4" @click ="getPosition($event)"></div>
+                    <div id="G3" @click ="getPosition($event)"></div>
+                    <div id="F3" @click ="getPosition($event)"></div>
+                    <div id="E3" @click ="getPosition($event)"></div>
+                    <div id="D3" @click ="getPosition($event)"></div>
+                    <div id="C3" @click ="getPosition($event)"></div>
+                    <div id="B3" @click ="getPosition($event)"></div>
+                    <div id="A3" @click ="getPosition($event)"></div>
                 </div>
                 <div class="row line-2">
-                    <div id="A5" @click ="getPosition($event)"></div>
-                    <div id="B5" @click ="getPosition($event)"></div>
-                    <div id="C5" @click ="getPosition($event)"></div>
-                    <div id="D5" @click ="getPosition($event)"></div>
-                    <div id="E5" @click ="getPosition($event)"></div>
-                    <div id="F5" @click ="getPosition($event)"></div>
-                    <div id="G5" @click ="getPosition($event)"></div>
-                    <div id="H5" @click ="getPosition($event)"></div>
+                    <div id="H4" @click ="getPosition($event)"></div>
+                    <div id="G4" @click ="getPosition($event)"></div>
+                    <div id="F4" @click ="getPosition($event)"></div>
+                    <div id="E4" @click ="getPosition($event)"></div>
+                    <div id="D4" @click ="getPosition($event)"></div>
+                    <div id="C4" @click ="getPosition($event)"></div>
+                    <div id="B4" @click ="getPosition($event)"></div>
+                    <div id="A4" @click ="getPosition($event)"></div>
                 </div>
                 <div class="row line-1">
-                    <div id="A6" @click ="getPosition($event)"></div>
-                    <div id="B6" @click ="getPosition($event)"></div>
-                    <div id="C6" @click ="getPosition($event)"></div>
-                    <div id="D6" @click ="getPosition($event)"></div>
-                    <div id="E6" @click ="getPosition($event)"></div>
-                    <div id="F6" @click ="getPosition($event)"></div>
-                    <div id="G6" @click ="getPosition($event)"></div>
+                    <div id="H5" @click ="getPosition($event)"></div>
+                    <div id="G5" @click ="getPosition($event)"></div>
+                    <div id="F5" @click ="getPosition($event)"></div>
+                    <div id="E5" @click ="getPosition($event)"></div>
+                    <div id="D5" @click ="getPosition($event)"></div>
+                    <div id="C5" @click ="getPosition($event)"></div>
+                    <div id="B5" @click ="getPosition($event)"></div>
+                    <div id="A5" @click ="getPosition($event)"></div>
+                </div>
+                <div class="row line-2">
                     <div id="H6" @click ="getPosition($event)"></div>
+                    <div id="G6" @click ="getPosition($event)"></div>
+                    <div id="F6" @click ="getPosition($event)"></div>
+                    <div id="E6" @click ="getPosition($event)"></div>
+                    <div id="D6" @click ="getPosition($event)"></div>
+                    <div id="C6" @click ="getPosition($event)"></div>
+                    <div id="B6" @click ="getPosition($event)"></div>
+                    <div id="A6" @click ="getPosition($event)"></div>
                 </div>
                 
-                <div class="row line-2">
-                    <div id="A7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="B7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="C7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="D7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="E7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="F7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="G7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                    <div id="H7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
-                </div>
                 <div class="row line-1">
-                    <div id="A8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
-                    <div id="B8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_preto.png') + ')' }"></div>
-                    <div id="C8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_preto.png') + ')' }"></div>
-                    <div id="D8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rainha_preto.png') + ')' }"></div>
-                    <div id="E8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rei_preto.png') + ')' }"></div>
-                    <div id="F8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_preto.png') + ')' }"></div>
-                    <div id="G8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_preto.png') + ')' }"></div>
+                    <div id="H7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="G7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="F7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="E7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="D7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="C7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="B7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                    <div id="A7" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/peao_preto.png') + ')' }"></div>
+                </div>
+                <div class="row line-2">
                     <div id="H8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
+                    <div id="G8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_preto.png') + ')' }"></div>
+                    <div id="F8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_preto.png') + ')' }"></div>
+                    <div id="E8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rei_preto.png') + ')' }"></div>
+                    <div id="D8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/rainha_preto.png') + ')' }"></div>
+                    <div id="C8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/bispo_preto.png') + ')' }"></div>
+                    <div id="B8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/cavalo_preto.png') + ')' }"></div>
+                    <div id="A8" @click ="getPosition($event)" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/torre_preto.png') + ')' }"></div>
                 </div>   
             </div>
 
