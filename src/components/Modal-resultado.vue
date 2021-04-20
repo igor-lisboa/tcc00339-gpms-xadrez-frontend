@@ -54,16 +54,21 @@
         switch(result) {
           case 'win':
             this.title = 'Vitória';
-            this.message = 'Parabéns pela sua vitória!'
+            this.message = 'Coloca um sorriso no rosto! Você ganhou!'
             break;
           case 'lose':
             this.title = 'Derrota';
-            this.message = 'Não foi dessa vez! Tente novamente!'
+            this.message = 'Não fica com raiva! Perder faz parte da vida!'
+            break;
+          case 'Desistência: Um jogador deixou a partida':
+            this.result = 'win';
+            this.title = 'Vitória';
+            this.message = 'Vitória devido ao adversário fugir de medo!'
             break;
           default:
             this.title = result;
             this.result = 'draw';
-            this.message = 'Você e seu adversário empataram nesse jogo!'
+            this.message = 'Empate, né! Melhor que uma derrota...'
             break;
         }
         return new Promise((resolve, reject) => {

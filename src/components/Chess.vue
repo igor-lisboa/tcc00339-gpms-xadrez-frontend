@@ -1,7 +1,6 @@
 <template>
     <div class="containerFull">
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible}" class="content-height-blur">
-             
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible || this.isModalResultadoVisible || this.isModalPromoVisible || this.isModalConfirmationVisible}" class="content-height-blur">            
             <div class="horizontal-position" v-if="player=='branco'">
                 <div>8</div>
                 <div>7</div>
@@ -311,19 +310,21 @@
                 turn: undefined,
                 blackTurn: false,
                 blockClick: false,
+                opponentLeft: false,
                 //configuração jogador
                 player: "branco",
                 playerconf:{ladoId:0, tipoId:0},
                 kingSquare: undefined,
+                waiver: false,
                 information: true, 
                 //configuração jogadas
                 jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
                 mapJogada: new Map()              
             }
         },
-        destroyed(){
-            this.socket.on("disconnect");
-        },
+        //destroyed(){
+          //  this.socket.on("disconnect");
+        //},
         // iniciar modal de iniciação ao carregar página 
         mounted(){
             this.showModalIniciacao();                    
@@ -493,8 +494,7 @@
                         this.jogada.peca = ev.target.style.backgroundImage;
                         this.jogada.posicao = ev.target.id;
 
-                        await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response
-                        ).then(
+                        await http.get('jogos/' + this.idGame + '/pecas/' + this.jogada.posicao + '/possiveis-jogadas', { headers: headers }).then(response => response).then(
                             json => {
                                 if(json.data != null){
                                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
@@ -641,11 +641,12 @@
                             message: 'Confirma sua desistência do jogo? (essa ação fará você sair da sala)'
                         }).then(async (result) =>{
                             if(result){
+                                this.waiver = true;
                                 http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
-                                location.reload();
                             }
+                            this.isModalConfirmationVisible=false;
                         });
-                        this.isModalConfirmationVisible=false;
+                        
                         break;
                     case "empate":
                         this.$refs.modalConfirmation.show({
@@ -720,6 +721,7 @@
                                 try{
                                     http.post("/jogos/"+this.idGame+"/reset/responde",{ resposta: result },{ headers: headers });       //chama endpoint de resposta de revanche
                                     if(result){
+                                        await this.reconnectPlayer();
                                         this.resetBoard();
                                     }else{
                                         location.reload();
@@ -797,6 +799,20 @@
                                
             },
 
+            async reconnectPlayer(){
+
+                this.turn = this.playerconf.ladoId == 0 ? true : false;
+                this.kingSquare = this.playerconf.ladoId == 0 ? "E1" : "E8";
+                this.blackTurn = false;
+
+                this.socket.disconnect();
+
+                await http.post("jogos/"+this.idGame+"/jogadores",this.playerconf)         //chama endpoint de escolha de peça
+                    .then(() => console.log("reset"));
+
+                this.createSocket();
+            },
+
             //criação do socket e eventos
             createSocket: function(){          
             this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
@@ -828,40 +844,74 @@
 
                 // jogo foi encerrado por vitória ou empate
                 this.socket.on("jogoFinalizado", (data) =>{
+                    if(this.waiver){
+                        location.reload();
+                    }else{
 
-                    this.isModalWaitVisible = false;
+                        if(data.jogoFinalizacao.toString().includes("Desistência")){
+                            this.$refs.toast.show({
+                                message: 'Adversário saiu da sala',
+                                type: 'error'
+                            });
+                            this.opponentLeft = true;
+                        }
 
-                    let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
+                        if(this.isModalResultadoVisible){
+                            return;
+                        }
+                    
+                        this.isModalWaitVisible = false;
 
-                    if(data.jogoFinalizacao.toString().includes("Vitória") || data.jogoFinalizacao.toString().includes("Desistência")){
-                        if(!data.jogoFinalizacao.toString().includes(color)){
-                            this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
+                        let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
+
+                        if(data.jogoFinalizacao.toString().includes("Vitória")){
+                            if(!data.jogoFinalizacao.toString().includes(color)){
+                                this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
+                                    if(!this.opponentLeft){
+                                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                        location.reload();
+                                    }
+
+                                    if(result == "rematch"){
+                                        this.isModalResultadoVisible = false;
+                                        this.openModal("revanche");
+                                    }else{
+                                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                        this.waiver = true;
+                                    }
+                                })
+                                this.isModalResultadoVisible = true;
+                                return;
+                            }else{ 
+                                this.$refs.modalResultado.gameResult('win').then( async() =>{
+                                    if(!this.opponentLeft){
+                                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                        location.reload();
+                                    }
+
+                                    http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                    this.waiver = true;
+                                })
+                                this.isModalResultadoVisible = true;
+                                return;
+                            }
+                        }
+                        this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
+                                if(!this.opponentLeft){
+                                    http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                    location.reload();
+                                }
+
                                 if(result == "rematch"){
                                     this.isModalResultadoVisible = false;
                                     this.openModal("revanche");
                                 }else{
-                                    location.reload();
+                                    http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                    this.waiver = true;
                                 }
                             })
-                            this.isModalResultadoVisible = true;
-                            return;
-                        }else{ 
-                            this.$refs.modalResultado.gameResult('win').then( async() =>{
-                                location.reload();
-                            })
-                            this.isModalResultadoVisible = true;
-                            return;
-                        }
+                        this.isModalResultadoVisible = true;
                     }
-                    this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
-                            if(result == "rematch"){
-                                this.isModalResultadoVisible = false;
-                                this.openModal("revanche");
-                            }else{
-                                location.reload();
-                            }
-                        })
-                    this.isModalResultadoVisible = true;
                 })
 
                 // adversário solicitou revanche
@@ -870,13 +920,14 @@
                 })
 
                 // adversário recusou revanche
-                this.socket.on("resetPropostoResposta", (data) =>{
-                    console.log(data);
+                this.socket.on("resetPropostoResposta", async (data) =>{
                     this.isModalWaitVisible = false;
                     if(data){
-                       this.resetBoard();
+                        await this.reconnectPlayer();
+                        this.resetBoard();
                     }else{
-                       location.reload();
+                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                        location.reload();
                     }
                      
                 })
