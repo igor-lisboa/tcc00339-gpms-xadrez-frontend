@@ -867,7 +867,7 @@
                         if(data.jogoFinalizacao.toString().includes("Vitória")){
                             if(!data.jogoFinalizacao.toString().includes(color)){
                                 this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
-                                    if(!this.opponentLeft){
+                                    if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     }
@@ -884,7 +884,7 @@
                                 return;
                             }else{ 
                                 this.$refs.modalResultado.gameResult('win').then( async() =>{
-                                    if(!this.opponentLeft){
+                                    if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     }
@@ -897,7 +897,7 @@
                             }
                         }
                         this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
-                                if(!this.opponentLeft){
+                                if(this.opponentLeft){
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     location.reload();
                                 }
