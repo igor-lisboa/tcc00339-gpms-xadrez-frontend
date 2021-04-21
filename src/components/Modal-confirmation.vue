@@ -36,34 +36,30 @@
     name: 'modalConfirmation',
     data () {
       return {
-        type: "",
         title: "",
         message: "",
-        codeRoom: "",
         resolvePromise: undefined,
         rejectPromise: undefined
       }
     },
     methods: {
-        // função de criação do modal de confirmação
-        show(opts = {}) {
-            this.title = opts.title;
-            this.message = opts.message;
-            this.type = opts.type;
-            this.codeRoom = opts.codeRoom;
-            return new Promise((resolve, reject) => {
-              this.resolvePromise = resolve;
-              this.rejectPromise = reject;
+      // função de criação do modal de confirmação
+      show(opts = {}) {
+        this.title = opts.title;
+        this.message = opts.message;
+        return new Promise((resolve, reject) => {
+          this.resolvePromise = resolve;
+          this.rejectPromise = reject;
         })
-        },
-        // função para evento de confirmação
-        confirmar() {
-            this.resolvePromise(true);
-        },
-        // função para evento de desaprovação
-        cancelar() {
-            this.resolvePromise(false);
-        }
+      },
+      // função para evento de confirmação
+      confirmar() {
+          this.resolvePromise(true);
+      },
+      // função para evento de desaprovação
+      cancelar() {
+          this.resolvePromise(false);
+      }
     }
   };
 </script>

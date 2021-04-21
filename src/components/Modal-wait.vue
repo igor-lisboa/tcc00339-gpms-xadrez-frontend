@@ -33,9 +33,9 @@
     },
     methods: {
         // função de criação do modal de confirmação
-        show(codeRoom) {
-            this.title = "Esperando adversário";
-            this.message = "Sala " + codeRoom + " criada. Na espera do adversário entrar na sala";
+        show(message) {
+            this.title = "Esperando adversário...";
+            this.message = message;
         }
     }
   };

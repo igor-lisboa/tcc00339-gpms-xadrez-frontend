@@ -24,19 +24,19 @@
                 <label>Iniciar novo jogo: </label>
                 <div>
                     <input type="radio" id="JxJ" name="optJogos" value="0" checked> 
-                      <label for="jogo1"> JxJ </label>
+                      <label for="JxJ"> JxJ </label>
                     <input type="radio" id="JxIA" name="optJogos" value="1"> 
-                      <label for="jogo2"> JxIA </label>
+                      <label for="JxIA"> JxIA </label>
                     <input type="radio" id="IAxIA" name="optJogos" value="2"> 
-                      <label for="jogo3"> IAxIA </label>
-                  <button @click="criarSala">Iniciar agora</button>
+                      <label for="IAxIA"> IAxIA </label>
+                  <button @click="criarSala">INICIAR AGORA</button>
                 </div>
             </div>
             <div class="get-in-game">
                 <label>Entrar em um jogo:</label>
                 <div>
                   <input placeholder="Código da sala" @keyup="keyupInput($event)" v-model="valueInput">
-                  <button :class="{'disabled': this.disabledButton}" :disabled='this.disabledButton' @click="entrarSala">Entrar</button>
+                  <button :class="{'disabled': this.disabledButton}" :disabled='this.disabledButton' @click="entrarSala">ENTRAR</button>
                 </div>
             </div>           
         </div>
@@ -98,7 +98,6 @@
       
       //função de criação de sala
       async criarSala() {
-        console.log(document.querySelectorAll("input[name=optJogos]:checked")[0])
 
         this.gameMode = document.querySelectorAll("input[name=optJogos]:checked")[0].value;
 
@@ -331,7 +330,7 @@
     display: flex;
     flex-direction: column;
     text-align: center;
-    font-size: 1.4em;
+    font-size: 1.6em;
     width: 100%;
     margin-left: 5%;
     padding: 0 10px;
@@ -347,6 +346,13 @@
     font-size: 1.4em;
     border-bottom: 1px solid #6e6e70;
   }
+  .new-game input[type=radio]
+  {
+    border: 0px;
+    width: 3.3%;
+    height: 2em;
+    margin-left: 2em;
+  }
   .get-in-game
   {
     display: block;
@@ -359,11 +365,12 @@
   {
     width:45%;
     height: 35px;
+    font-size: 1em;
   }
   .new-game button,
   .get-in-game button
   {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 800;
     padding: 0.3em 1em;
     margin: 1em;
