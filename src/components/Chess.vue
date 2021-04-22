@@ -637,13 +637,14 @@
                     break;
                 }    
                 
-                this.moves.unshift({origin: origin, destiny: destiny, piece: document.getElementById(origin).style.backgroundImage.substring(10, document.getElementById(destiny).style.backgroundImage.indexOf("."))});
+                this.moves.unshift({origin: origin, destiny: destiny, piece: document.getElementById(origin).style.backgroundImage.substring(10, document.getElementById(origin).style.backgroundImage.indexOf("."))});
 
                 document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
+                document.getElementById(this.kingSquare).classList.remove("check");
+                document.getElementById(this.kingSquare).title = "";
 
                 if(document.getElementById(destiny).style.backgroundImage.includes(this.playerconf.ladoId == 0 ? "rei_branco" : "rei_preto")){
-                    document.getElementById(this.kingSquare).classList.remove("check");
                     this.kingSquare = destiny;
                 }
 
@@ -852,6 +853,7 @@
                     this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
                     if(data.chequeLadoAtual){
                         document.getElementById(this.kingSquare).classList.add("check");
+                        document.getElementById(this.kingSquare).title = "Rei em xeque";
                     }
                 })
 
