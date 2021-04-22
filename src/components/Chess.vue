@@ -215,6 +215,25 @@
                 <img v-if='this.information' src="../assets/imgs/dog_in_chess.png" title='Jogar é fácil...' @click="changeInformation()">
                 <img v-else src="../assets/imgs/dog_in_study.png" title='...sabendo as regras' @click="changeInformation()">
                 <h3>SALA {{this.idGame}}</h3>
+                <div class='size-move-table'>
+                <div class="move-table">
+                    <div class="move-table-head">
+                        <div class="move-table-cell" align="center">Peça</div>
+                        <div  class="move-table-cell">Origem</div>
+                        <div  class="move-table-cell">Destino</div>
+                    </div>
+                    <div class="move-table-row" v-for="(move, i) in moves" :key="i">
+                        <div class="move-table-cell" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/' + move.piece + '.png' ) + ')' }">
+                        </div>
+                        <div class="move-table-cell">
+                            {{ move.origin }}
+                        </div>
+                        <div class="move-table-cell">
+                            {{ move.destiny }}
+                        </div>
+                    </div>
+                </div>
+                </div>
             </div>
             
             <div class="turn" v-if="this.idGame">
@@ -319,7 +338,8 @@
                 information: true, 
                 //configuração jogadas
                 jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
-                mapJogada: new Map()              
+                mapJogada: new Map(),
+                moves: []             
             }
         },
         //destroyed(){
@@ -615,7 +635,10 @@
                         pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ promotedTo.toLowerCase() + pieceColor +'.png') + ')';
                     } 
                     break;
-                }           
+                }    
+                
+                this.moves.unshift({origin: origin, destiny: destiny, piece: document.getElementById(origin).style.backgroundImage.substring(10, document.getElementById(destiny).style.backgroundImage.indexOf("."))});
+
                 document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
                 document.getElementById(origin).style.backgroundImage = "";
 
@@ -1197,5 +1220,49 @@
     .disabled
     {
         opacity: .2;
+    }
+    /****************** tabela de jogadas ************************/
+    .move-table{
+        display:table;         
+        width: 23vw;;         
+        background-color:#eee;                
+        border-spacing:4px;
+        margin-left: 1vw;
+        font-size: 0.8em;
+        opacity: 0.5;
+    }
+    .move-table:hover {
+        opacity: 1.0;
+    }
+    .move-table-head{
+        display:table-row;
+    }
+    .move-table-row{
+        display:table-row;
+        clear:both;
+        background-color:#ccc;
+        overflow: auto;
+        
+    }
+    .move-table-cell{
+        display:table-cell;         
+        width: 7vw; 
+        height: 2.5vw;        
+        border-left: 2px solid #fff;
+        vertical-align: middle;
+        background-image:-moz-linear-gradient();        
+        background-repeat: no-repeat;
+        background-position-y: center;
+        background-position-x: center;
+        background-size: 40%;
+    }
+    .size-move-table
+    {
+        height: 25vw;
+        overflow: auto;
+    }
+    /* Largura da barra de rolagem */
+    ::-webkit-scrollbar {
+        width: 0px;
     }
 </style>
