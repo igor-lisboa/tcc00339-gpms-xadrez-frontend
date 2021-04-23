@@ -869,7 +869,7 @@
 
             //criação do socket e eventos
             createSocket: function(){          
-            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" +(this.gameMode==2?"I.A.":this.idGame + "-" + this.playerconf.ladoId) });
             this.socket.on("connect", () => {
 
                 //adversário entrou na sala
