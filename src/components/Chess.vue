@@ -540,7 +540,7 @@
                     
                     http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers });                //acessa endpoint de criação de sala
                     
-                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null);
+                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null,false);
 
                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
 
@@ -567,7 +567,14 @@
                 }
                 
             },
-
+            paintPositionAdver:function(origin,destiny){
+              document.getElementById(origin).classList.add("origin");  
+              document.getElementById(destiny).classList.add("origin");
+            },
+            removePaintAdver:function(origin,destiny){
+              document.getElementById(origin).classList.remove("origin");  
+              document.getElementById(destiny).classList.remove("origin");
+            },
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){ 
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
@@ -578,7 +585,7 @@
             },
 
             // função para realizar alteração de jogada no tabuleiro
-            async accomplishMove(origin, destiny, promotedTo){
+            async accomplishMove(origin, destiny, promotedTo,adver){
                 const headers = {
                     'lado': this.playerconf.ladoId
                 }
@@ -640,6 +647,12 @@
                 this.moves.unshift({origin: origin, destiny: destiny, piece: document.getElementById(origin).style.backgroundImage.substring(10, document.getElementById(origin).style.backgroundImage.indexOf("."))});
 
                 document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
+                 if(adver){
+                this.paintPositionAdver(origin,destiny);
+                 setTimeout(() => {
+                    this.removePaintAdver(origin,destiny);
+                }, 2000);
+                 }
                 document.getElementById(origin).style.backgroundImage = "";
                 document.getElementById(this.kingSquare).classList.remove("check");
                 document.getElementById(this.kingSquare).title = "";
@@ -850,7 +863,7 @@
                 // adversário realizaou jogada
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
-                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara,true);
                     if(data.chequeLadoAtual){
                         document.getElementById(this.kingSquare).classList.add("check");
                         document.getElementById(this.kingSquare).title = "Rei em xeque";
@@ -1065,6 +1078,9 @@
     {
         background-color:#59fc59 !important;
         pointer-events: all !important;
+    }
+    .origin{
+        background-color:#FFE333 !important;
     }
     .catch
     {
