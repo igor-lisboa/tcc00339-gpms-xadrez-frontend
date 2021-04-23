@@ -239,10 +239,12 @@
             <div class="turn" v-if="this.idGame">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
                     <div class="centered" :class="{'black':  this.blackTurn}">
-                        <h3 v-if="this.turn">Sua vez</h3>
-                        <h3 v-else>Vez do adversário</h3>
-                        <span v-if="this.turn">Realize sua jogada</span>
-                        <span v-else>Espere sua vez de jogar</span>
+                        <h3 v-show="this.gameMode != 2" v-if="this.turn">Sua vez</h3>
+                        <h3 v-show="this.gameMode != 2" v-else>Vez do adversário</h3>
+                        <h3 v-show="this.gameMode == 2" >Vez da IA</h3>
+                        <span v-show="this.gameMode != 2" v-if="this.turn">Realize sua jogada</span>
+                        <span v-show="this.gameMode != 2" v-else>Espere sua vez de jogar</span>
+                        <span v-show="this.gameMode == 2">Assista e não durma</span>
                     </div> 
                 </div>
             </div>
@@ -358,6 +360,21 @@
                     if(result){
 
                         this.isModalIniciacaoVisible = false;
+
+                        if( localStorage.getItem("tipoJogo") == 2 ){
+                            this.player = "branco";
+                            this.playerconf.ladoId=0;
+                            this.turn = false;
+                            this.kingSquare = "E1";
+                            this.idGame = localStorage.getItem("idjogo");
+                            this.gameMode = localStorage.getItem("tipoJogo");
+                            localStorage.clear();
+
+                            this.createSocket();
+
+                            return;
+                        }
+                        
                         
                         if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
                         
@@ -425,9 +442,9 @@
                           
                             //let playerconf = {ladoId: localStorage.getItem("ladoId"), tipoId:0, jogadorId: this.jogadorId};
                             try{
-                            await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
-                                .then(response=>response)
-                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
+                                    .then(response=>response)
+                                    .then(json=> localStorage.setItem("ladoId",json.data.data.id));
                             }catch(error){
                                 // mostra notificação de entrada na sala
                                 this.$refs.toast.show({
@@ -558,7 +575,7 @@
                     document.getElementById(item.casaDestino.casa).title = "Movimento"
                 }
                 this.mapJogada.set(item.casaDestino.casa, item.nome);
-                if(item.nome){
+                if(item.nome || item.nome != "L"){
                     if(document.getElementById(item.casaDestino.casa).title == "Captura" && item.nome == "Promoção do Peão"){
                         document.getElementById(item.casaDestino.casa).title = document.getElementById(item.casaDestino.casa).title + " e " + item.nome;
                         return;
