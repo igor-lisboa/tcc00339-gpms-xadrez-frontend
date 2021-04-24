@@ -260,8 +260,8 @@
             >
 
             <div class="button-area" v-if="this.idGame">
-                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('desistencia')">DESISTÊNCIA</button>
-                <button class="emp" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('empate')">COMUM ACORDO</button>
+                <button class="des" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('desistencia')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('empate')">COMUM ACORDO</button>
             </div>
 
         </div>
@@ -881,7 +881,7 @@
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
                     this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara,true);
-                    if(data.chequeLadoAtual){
+                    if(data.chequeLadoAtual && this.gameMode != 2){
                         document.getElementById(this.kingSquare).classList.add("check");
                         document.getElementById(this.kingSquare).title = "Rei em xeque";
                     }
