@@ -900,8 +900,6 @@
                 // jogo foi encerrado por vitória ou empate
                 this.socket.on("jogoFinalizado", async (data) =>{
 
-                    console.log(data.jogoFinalizacao);
-
                     if(this.waiver){
                         location.reload();
                     }else{
