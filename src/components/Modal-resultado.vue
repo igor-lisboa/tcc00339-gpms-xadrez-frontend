@@ -49,7 +49,7 @@
       },
       
       // show modal
-      gameResult( result ) {
+      gameResult( result, info ) {
         this.result = result;
         switch(result) {
           case 'win':
@@ -64,6 +64,10 @@
             this.result = 'win';
             this.title = 'Vitória';
             this.message = 'Vitória devido ao adversário fugir de medo!'
+            break;
+          case "IA vitória":
+            this.title = 'Vitória da IA';
+            this.message = info + ' controlado pela IA! Mas isso era esperado...'
             break;
           default:
             this.title = result;

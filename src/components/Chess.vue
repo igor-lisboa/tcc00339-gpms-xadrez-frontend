@@ -898,7 +898,10 @@
                 })
 
                 // jogo foi encerrado por vitória ou empate
-                this.socket.on("jogoFinalizado", (data) =>{
+                this.socket.on("jogoFinalizado", async (data) =>{
+
+                    console.log(data.jogoFinalizacao);
+
                     if(this.waiver){
                         location.reload();
                     }else{
@@ -920,6 +923,20 @@
                         let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
 
                         if(data.jogoFinalizacao.toString().includes("Vitória")){
+
+                            if(this.gameMode == 2){
+
+                                const delay = ms => new Promise(res => setTimeout(res, ms));
+                                await delay(2000);
+
+                                this.$refs.modalResultado.gameResult( "IA vitória", data.jogoFinalizacao ).then( async() =>{
+                                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                        location.reload();
+                                    })
+                                this.isModalResultadoVisible = true;
+                                return; 
+                            }
+
                             if(!data.jogoFinalizacao.toString().includes(color)){
                                 this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
                                     if(this.opponentLeft){
