@@ -1,5 +1,6 @@
 <template>
     <div class="containerFull">
+        <audio id="sound" src='../assets/move_sound.mp3' />
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible || this.isModalResultadoVisible || this.isModalPromoVisible || this.isModalConfirmationVisible}" class="content-height-blur">            
             <div class="horizontal-position" v-if="player=='branco'">
                 <div>8</div>
@@ -677,6 +678,8 @@
                 if(document.getElementById(destiny).style.backgroundImage.includes(this.playerconf.ladoId == 0 ? "rei_branco" : "rei_preto")){
                     this.kingSquare = destiny;
                 }
+
+                document.getElementById('sound').play();
 
                 this.turn = !this.turn;
                 this.blockClick = false;
