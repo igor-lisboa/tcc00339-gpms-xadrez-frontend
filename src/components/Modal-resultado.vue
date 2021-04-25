@@ -7,6 +7,9 @@
           aria-labelledby="modalTitle"
           aria-describedby="modalDescription"
         >
+        <audio id="winSound" src='../assets/win_game.mp3' />
+        <audio id="loseSound" src='../assets/lose_game.mp3' />
+        <audio id="endSound" src='../assets/game_over.mp3' />
           <div class="header">
               <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
                 <img src="../assets/imgs/dog_chess_win.png" v-if="result == 'win'">
@@ -49,26 +52,35 @@
       },
       
       // show modal
-      gameResult( result ) {
+      gameResult( result, info ) {
         this.result = result;
         switch(result) {
           case 'win':
             this.title = 'Vitória';
             this.message = 'Coloca um sorriso no rosto! Você ganhou!'
+            document.getElementById('winSound').play();
             break;
           case 'lose':
             this.title = 'Derrota';
             this.message = 'Não fica com raiva! Perder faz parte da vida!'
+            document.getElementById('loseSound').play();
             break;
           case 'Desistência: Um jogador deixou a partida':
             this.result = 'win';
             this.title = 'Vitória';
             this.message = 'Vitória devido ao adversário fugir de medo!'
+            document.getElementById('winSound').play();
+            break;
+          case "IA vitória":
+            this.title = 'Vitória da IA';
+            this.message = info + ' controlado pela IA! Mas isso era esperado...'
+            document.getElementById('endSound').play();
             break;
           default:
             this.title = result;
             this.result = 'draw';
             this.message = 'Empate, né! Melhor que uma derrota...'
+            document.getElementById('endSound').play();
             break;
         }
         return new Promise((resolve, reject) => {

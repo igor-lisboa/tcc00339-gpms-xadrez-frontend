@@ -1,5 +1,6 @@
 <template>
     <div class="containerFull">
+        <audio id="sound" src='../assets/move_sound.mp3' />
         <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible || this.isModalResultadoVisible || this.isModalPromoVisible || this.isModalConfirmationVisible}" class="content-height-blur">            
             <div class="horizontal-position" v-if="player=='branco'">
                 <div>8</div>
@@ -215,15 +216,36 @@
                 <img v-if='this.information' src="../assets/imgs/dog_in_chess.png" title='Jogar é fácil...' @click="changeInformation()">
                 <img v-else src="../assets/imgs/dog_in_study.png" title='...sabendo as regras' @click="changeInformation()">
                 <h3>SALA {{this.idGame}}</h3>
+                <div class='size-move-table'>
+                <div class="move-table">
+                    <div class="move-table-head">
+                        <div class="move-table-cell" align="center">Peça</div>
+                        <div  class="move-table-cell">Origem</div>
+                        <div  class="move-table-cell">Destino</div>
+                    </div>
+                    <div class="move-table-row" v-for="(move, i) in moves" :key="i">
+                        <div class="move-table-cell" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/pecas/' + move.piece + '.png' ) + ')' }">
+                        </div>
+                        <div class="move-table-cell">
+                            {{ move.origin }}
+                        </div>
+                        <div class="move-table-cell">
+                            {{ move.destiny }}
+                        </div>
+                    </div>
+                </div>
+                </div>
             </div>
             
             <div class="turn" v-if="this.idGame">
                 <div class="turn-square" :class="this.turn ? 'my-turn' : 'opponent-turn'" >
                     <div class="centered" :class="{'black':  this.blackTurn}">
-                        <h3 v-if="this.turn">Sua vez</h3>
-                        <h3 v-else>Vez do adversário</h3>
-                        <span v-if="this.turn">Realize sua jogada</span>
-                        <span v-else>Espere sua vez de jogar</span>
+                        <h3 v-show="this.gameMode != 2" v-if="this.turn">Sua vez</h3>
+                        <h3 v-show="this.gameMode != 2" v-else>Vez do adversário</h3>
+                        <h3 v-show="this.gameMode == 2" >Vez da IA</h3>
+                        <span v-show="this.gameMode != 2" v-if="this.turn">Realize sua jogada</span>
+                        <span v-show="this.gameMode != 2" v-else>Espere sua vez de jogar</span>
+                        <span v-show="this.gameMode == 2">Assista e não durma</span>
                     </div> 
                 </div>
             </div>
@@ -239,8 +261,8 @@
             >
 
             <div class="button-area" v-if="this.idGame">
-                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('desistencia')">DESISTÊNCIA</button>
-                <button class="emp" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('empate')">COMUM ACORDO</button>
+                <button class="des" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('desistencia')">DESISTÊNCIA</button>
+                <button class="emp" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('empate')">COMUM ACORDO</button>
             </div>
 
         </div>
@@ -319,7 +341,8 @@
                 information: true, 
                 //configuração jogadas
                 jogada: {posicaoPrevia:"", posicao:"", peca:"", posicoes:{}},
-                mapJogada: new Map()              
+                mapJogada: new Map(),
+                moves: []             
             }
         },
         //destroyed(){
@@ -338,6 +361,21 @@
                     if(result){
 
                         this.isModalIniciacaoVisible = false;
+
+                        if( localStorage.getItem("tipoJogo") == 2 ){
+                            this.player = "branco";
+                            this.playerconf.ladoId=0;
+                            this.turn = false;
+                            this.kingSquare = "E1";
+                            this.idGame = localStorage.getItem("idjogo");
+                            this.gameMode = localStorage.getItem("tipoJogo");
+                            localStorage.clear();
+
+                            this.createSocket();
+
+                            return;
+                        }
+                        
                         
                         if ( localStorage.getItem("acao") == "criacao" ){                      // caso tenha criado uma sala
                         
@@ -405,9 +443,9 @@
                           
                             //let playerconf = {ladoId: localStorage.getItem("ladoId"), tipoId:0, jogadorId: this.jogadorId};
                             try{
-                            await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
-                                .then(response=>response)
-                                .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
+                                    .then(response=>response)
+                                    .then(json=> localStorage.setItem("ladoId",json.data.data.id));
                             }catch(error){
                                 // mostra notificação de entrada na sala
                                 this.$refs.toast.show({
@@ -520,7 +558,7 @@
                     
                     http.post('jogos/' + this.idGame + '/pecas/' + this.jogada.posicaoPrevia + '/move/' + actualPos +'?' + this.playerconf.ladoId,{},{ headers: headers });                //acessa endpoint de criação de sala
                     
-                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null);
+                    this.accomplishMove(this.jogada.posicaoPrevia, actualPos, null,false);
 
                     JSON.parse(this.jogada.posicoes).forEach(this.removePaint);
 
@@ -538,7 +576,7 @@
                     document.getElementById(item.casaDestino.casa).title = "Movimento"
                 }
                 this.mapJogada.set(item.casaDestino.casa, item.nome);
-                if(item.nome){
+                if(item.nome || item.nome != "L"){
                     if(document.getElementById(item.casaDestino.casa).title == "Captura" && item.nome == "Promoção do Peão"){
                         document.getElementById(item.casaDestino.casa).title = document.getElementById(item.casaDestino.casa).title + " e " + item.nome;
                         return;
@@ -547,7 +585,14 @@
                 }
                 
             },
-
+            paintPositionAdver:function(origin,destiny){
+              document.getElementById(origin).classList.add("origin");  
+              document.getElementById(destiny).classList.add("origin");
+            },
+            removePaintAdver:function(origin,destiny){
+              document.getElementById(origin).classList.remove("origin");  
+              document.getElementById(destiny).classList.remove("origin");
+            },
             // função para remover a pintura de casas onde peça pode ser movida
             removePaint:function(item){ 
                 document.getElementById(item.casaDestino.casa).classList.remove("move");
@@ -558,7 +603,7 @@
             },
 
             // função para realizar alteração de jogada no tabuleiro
-            async accomplishMove(origin, destiny, promotedTo){
+            async accomplishMove(origin, destiny, promotedTo,adver){
                 const headers = {
                     'lado': this.playerconf.ladoId
                 }
@@ -615,14 +660,26 @@
                         pieceBackgroundChoosed = 'url(' + require('@/assets/imgs/pecas/'+ promotedTo.toLowerCase() + pieceColor +'.png') + ')';
                     } 
                     break;
-                }           
+                }    
+                
+                this.moves.unshift({origin: origin, destiny: destiny, piece: document.getElementById(origin).style.backgroundImage.substring(10, document.getElementById(origin).style.backgroundImage.indexOf("."))});
+
                 document.getElementById(destiny).style.backgroundImage = pieceBackgroundChoosed ? pieceBackgroundChoosed : document.getElementById(origin).style.backgroundImage;
+                 if(adver){
+                this.paintPositionAdver(origin,destiny);
+                 setTimeout(() => {
+                    this.removePaintAdver(origin,destiny);
+                }, 2000);
+                 }
                 document.getElementById(origin).style.backgroundImage = "";
+                document.getElementById(this.kingSquare).classList.remove("check");
+                document.getElementById(this.kingSquare).title = "";
 
                 if(document.getElementById(destiny).style.backgroundImage.includes(this.playerconf.ladoId == 0 ? "rei_branco" : "rei_preto")){
-                    document.getElementById(this.kingSquare).classList.remove("check");
                     this.kingSquare = destiny;
                 }
+
+                document.getElementById('sound').play();
 
                 this.turn = !this.turn;
                 this.blockClick = false;
@@ -815,7 +872,7 @@
 
             //criação do socket e eventos
             createSocket: function(){          
-            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" + this.idGame + "-" + this.playerconf.ladoId});
+            this.socket = io(process.env.VUE_APP_API_URL, {query:"jogador=" +(this.gameMode==2?"I.A.":this.idGame + "-" + this.playerconf.ladoId) });
             this.socket.on("connect", () => {
 
                 //adversário entrou na sala
@@ -826,9 +883,10 @@
                 // adversário realizaou jogada
                 this.socket.on("jogadaRealizada",(data) =>{
                     this.mapJogada.set(data.jogadaRealizada.casaDestino.casa, data.jogadaRealizada.nomeJogada);
-                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara);
-                    if(data.chequeLadoAtual){
+                    this.accomplishMove(data.jogadaRealizada.casaOrigem.casa, data.jogadaRealizada.casaDestino.casa, data.promocaoPara,true);
+                    if(data.chequeLadoAtual && this.gameMode != 2){
                         document.getElementById(this.kingSquare).classList.add("check");
+                        document.getElementById(this.kingSquare).title = "Rei em xeque";
                     }
                 })
 
@@ -843,7 +901,8 @@
                 })
 
                 // jogo foi encerrado por vitória ou empate
-                this.socket.on("jogoFinalizado", (data) =>{
+                this.socket.on("jogoFinalizado", async (data) =>{
+
                     if(this.waiver){
                         location.reload();
                     }else{
@@ -865,6 +924,20 @@
                         let color = this.playerconf.ladoId == 0 ? "Branco" : "Preto";
 
                         if(data.jogoFinalizacao.toString().includes("Vitória")){
+
+                            if(this.gameMode == 2){
+
+                                const delay = ms => new Promise(res => setTimeout(res, ms));
+                                await delay(2000);
+
+                                this.$refs.modalResultado.gameResult( "IA vitória", data.jogoFinalizacao ).then( async() =>{
+                                        http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+                                        location.reload();
+                                    })
+                                this.isModalResultadoVisible = true;
+                                return; 
+                            }
+
                             if(!data.jogoFinalizacao.toString().includes(color)){
                                 this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
                                     if(this.opponentLeft){
@@ -1041,6 +1114,9 @@
         background-color:#59fc59 !important;
         pointer-events: all !important;
     }
+    .origin{
+        background-color:#FFE333 !important;
+    }
     .catch
     {
         background-color:#62dbfa !important;
@@ -1197,5 +1273,49 @@
     .disabled
     {
         opacity: .2;
+    }
+    /****************** tabela de jogadas ************************/
+    .move-table{
+        display:table;         
+        width: 23vw;;         
+        background-color:#eee;                
+        border-spacing:4px;
+        margin-left: 1vw;
+        font-size: 0.8em;
+        opacity: 0.5;
+    }
+    .move-table:hover {
+        opacity: 1.0;
+    }
+    .move-table-head{
+        display:table-row;
+    }
+    .move-table-row{
+        display:table-row;
+        clear:both;
+        background-color:#ccc;
+        overflow: auto;
+        
+    }
+    .move-table-cell{
+        display:table-cell;         
+        width: 7vw; 
+        height: 2.5vw;        
+        border-left: 2px solid #fff;
+        vertical-align: middle;
+        background-image:-moz-linear-gradient();        
+        background-repeat: no-repeat;
+        background-position-y: center;
+        background-position-x: center;
+        background-size: 40%;
+    }
+    .size-move-table
+    {
+        height: 25vw;
+        overflow: auto;
+    }
+    /* Largura da barra de rolagem */
+    ::-webkit-scrollbar {
+        width: 0px;
     }
 </style>
