@@ -22,7 +22,7 @@
               <div class="message">
                   <label>{{message}}</label>
                   <div>
-                    <button class="rematch" :class="{'disabled': result == 'win'}" :disabled="result == 'win'" @click="rematch">REVANCHE</button>
+                    <button class="rematch" :class="{'disabled': result == 'win' || gameMode == 2}" :disabled="result == 'win'" @click="rematch">REVANCHE</button>
                     <button class="play-again" @click="newGame">NOVO JOGO</button> 
                   </div>
               </div>          
@@ -40,6 +40,7 @@
       return { 
         title: null,
         message: null,
+        gameMode: null,
         result: undefined,
         resolvePromise: undefined,
         rejectPromise: undefined
@@ -52,7 +53,8 @@
       },
       
       // show modal
-      gameResult( result, info ) {
+      gameResult( result, gameMode, info ) {
+        this.gameMode = gameMode;
         this.result = result;
         switch(result) {
           case 'win':

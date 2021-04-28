@@ -725,7 +725,7 @@
                     case "empate":
                         this.$refs.modalConfirmation.show({
                             title: 'Pediu arrego',
-                            message: 'Deseja pedir empate para o  jogo?'
+                            message: 'Deseja pedir empate para o jogo?'
                         }).then(async (result) =>{
                             if(result){
                                 try{
@@ -955,7 +955,7 @@
                                 const delay = ms => new Promise(res => setTimeout(res, ms));
                                 await delay(2000);
 
-                                this.$refs.modalResultado.gameResult( "IA vitória", data.jogoFinalizacao ).then( async() =>{
+                                this.$refs.modalResultado.gameResult( "IA vitória", this.gameMode, data.jogoFinalizacao ).then( async() =>{
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     })
@@ -964,7 +964,7 @@
                             }
 
                             if(!data.jogoFinalizacao.toString().includes(color)){
-                                this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
+                                this.$refs.modalResultado.gameResult('lose', this.gameMode).then( async(result) =>{
                                     if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
@@ -981,7 +981,7 @@
                                 this.isModalResultadoVisible = true;
                                 return;
                             }else{ 
-                                this.$refs.modalResultado.gameResult('win').then( async() =>{
+                                this.$refs.modalResultado.gameResult('win', this.gameMode).then( async() =>{
                                     if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
@@ -994,7 +994,7 @@
                                 return;
                             }
                         }
-                        this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
+                        this.$refs.modalResultado.gameResult( data.jogoFinalizacao, this.gameMode).then( async(result) =>{
                                 if(this.opponentLeft){
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     location.reload();
