@@ -1,7 +1,7 @@
 <template>
     <div class="containerFull">
         <audio id="sound" src='../assets/move_sound.mp3' />
-        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible || this.isModalResultadoVisible || this.isModalPromoVisible || this.isModalConfirmationVisible}" class="content-height-blur">            
+        <div :class="{'blur-content': this.isModalIniciacaoVisible || this.isModalChoosePieceVisible || this.isModalWaitVisible || this.isModalResultadoVisible || this.isModalPromoVisible || this.isModalConfirmationVisible || this.showLoading}" class="content-height-blur">            
             <div class="horizontal-position" v-if="player=='branco'">
                 <div>8</div>
                 <div>7</div>
@@ -269,28 +269,36 @@
         <modal-iniciacao
             ref="modalIniciacao"
             v-show="isModalIniciacaoVisible"
+             :class="{'loading-progress': this.showLoading}" 
         />
         <modal-choose-piece
             ref="modalChoosePiece"
             v-show="isModalChoosePieceVisible"
+            :class="{'loading-progress': this.showLoading}"
         />
         <modal-promo-piece
             ref="ModalPromoPiece"
             v-show="isModalPromoVisible"
+            :class="{'loading-progress': this.showLoading}"
         />
         <modalResultado 
             ref="modalResultado" 
             v-show="isModalResultadoVisible"
+            :class="{'loading-progress': this.showLoading}"
         />
         <modalWait 
             ref="modalWait" 
             v-show="isModalWaitVisible"
+            :class="{'loading-progress': this.showLoading}"
         />
         <modal-confirmation 
             ref="modalConfirmation" 
             v-show="isModalConfirmationVisible"
+            :class="{'loading-progress': this.showLoading}"
         />
         <toast ref="toast"/>
+        <div class="lds-ring" v-show="this.showLoading"><div></div><div></div><div></div><div></div></div>
+
     </div>
 </template>
 
@@ -314,7 +322,7 @@
             modalWait,
             toast,
             ModalPromoPiece,
-            ModalConfirmation 
+            ModalConfirmation
         },
         data () {
             return {
@@ -325,6 +333,7 @@
                 isModalWaitVisible: false,
                 isModalPromoVisible:false,
                 isModalConfirmationVisible: false,
+                showLoading: false,
                 //configuração jogo
                 idGame: undefined,
                 gameMode: undefined,
@@ -354,7 +363,7 @@
         },
         methods: { 
 
-            // função para mostrar modal de iniciação - DEVE SER EXCLUIDO POSTERIORMENTE
+            // função para mostrar modal de iniciação
             showModalIniciacao() {
 
                 this.$refs.modalIniciacao.show().then(async(result) =>{
@@ -386,6 +395,7 @@
                                 codeRoom: undefined
                             }).then( async (result) =>{
                                 if(result) {
+                                    this.showLoading = true;
 
                                     this.player = result;
                                     result == "branco" ? this.playerconf.ladoId=0 : this.playerconf.ladoId=1;
@@ -427,12 +437,15 @@
                                     localStorage.clear();
                                 }                              
                                 this.isModalChoosePieceVisible = false;
+                                this.showLoading = false;
                             }); 
                             this.isModalChoosePieceVisible = true;
                         }
 
                         if( localStorage.getItem("acao") === "entrada")                           // caso tenha entrado em uma sala
                         {
+                            this.showLoading = true;
+                             
                             let result = localStorage.getItem("ladoId")==0 ? "branco" : "preto"; 
                             this.player = result;
                             this.turn = result == "branco" ? true : false;
@@ -441,11 +454,26 @@
                             this.playerconf.ladoId = localStorage.getItem("ladoId");
                             this.playerconf.tipoId = 0;
                           
-                            //let playerconf = {ladoId: localStorage.getItem("ladoId"), tipoId:0, jogadorId: this.jogadorId};
                             try{
                                 await http.post("jogos/"+localStorage.getItem("idjogo")+"/jogadores",this.playerconf)             //acessa endpoint de inclusão de jogador
                                     .then(response=>response)
-                                    .then(json=> localStorage.setItem("ladoId",json.data.data.id));
+                                    .then(json=> {
+                                        localStorage.setItem("ladoId",json.data.data.id);
+
+                                        //função de iniciar socket jogoId-lado
+                                        this.idGame = localStorage.getItem("idjogo");
+                                        this.gameMode = localStorage.getItem("tipoJogo");
+                                        localStorage.clear();
+
+                                        // mostra notificação de entrada na sala
+                                        this.$refs.toast.show({
+                                            message: 'Entrada na sala com sucesso',
+                                            type: 'success'
+                                        });
+
+                                        this.createSocket();                                                            //iniciar socket jogoId-lado
+                                        });
+
                             }catch(error){
                                 // mostra notificação de entrada na sala
                                 this.$refs.toast.show({
@@ -454,18 +482,8 @@
                                 });
                             }
 
-                            //função de iniciar socket jogoId-lado
-                            this.idGame = localStorage.getItem("idjogo");
-                            this.gameMode = localStorage.getItem("tipoJogo");
-                            localStorage.clear();
+                            this.showLoading = false;
 
-                            // mostra notificação de entrada na sala
-                            this.$refs.toast.show({
-                                message: 'Entrada na sala com sucesso',
-                                type: 'success'
-                            });
-
-                            this.createSocket();                                                            //iniciar socket jogoId-lado
                         }
                     }
                 });
@@ -682,7 +700,6 @@
                 document.getElementById('sound').play();
 
                 this.turn = !this.turn;
-                this.blockClick = false;
                 this.blackTurn = !this.blackTurn;
             },
 
@@ -708,7 +725,7 @@
                     case "empate":
                         this.$refs.modalConfirmation.show({
                             title: 'Pediu arrego',
-                            message: 'Deseja pedir empate para o  jogo?'
+                            message: 'Deseja pedir empate para o jogo?'
                         }).then(async (result) =>{
                             if(result){
                                 try{
@@ -804,6 +821,11 @@
 
             // resetar tabuleiro 
             resetBoard(){
+
+                this.showLoading = true;
+
+                this.moves = [];
+
                 let color = "_branco";
                 let hp = ["1", "2", "3", "4", "5", "6", "7", "8"];
                 let vp = ["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -853,6 +875,8 @@
                 }
                 this.turn = this.playerconf.ladoId == 0 ? true : false;
                 this.kingSquare = this.playerconf.ladoId == 0 ? "E1" : "E8";
+
+                this.showLoading = false
                                
             },
 
@@ -888,6 +912,7 @@
                         document.getElementById(this.kingSquare).classList.add("check");
                         document.getElementById(this.kingSquare).title = "Rei em xeque";
                     }
+                    this.blockClick = false;
                 })
 
                 // adversário propos empate comum acordo
@@ -930,7 +955,7 @@
                                 const delay = ms => new Promise(res => setTimeout(res, ms));
                                 await delay(2000);
 
-                                this.$refs.modalResultado.gameResult( "IA vitória", data.jogoFinalizacao ).then( async() =>{
+                                this.$refs.modalResultado.gameResult( "IA vitória", this.gameMode, data.jogoFinalizacao ).then( async() =>{
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     })
@@ -939,7 +964,7 @@
                             }
 
                             if(!data.jogoFinalizacao.toString().includes(color)){
-                                this.$refs.modalResultado.gameResult('lose').then( async(result) =>{
+                                this.$refs.modalResultado.gameResult('lose', this.gameMode).then( async(result) =>{
                                     if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
@@ -956,7 +981,7 @@
                                 this.isModalResultadoVisible = true;
                                 return;
                             }else{ 
-                                this.$refs.modalResultado.gameResult('win').then( async() =>{
+                                this.$refs.modalResultado.gameResult('win', this.gameMode).then( async() =>{
                                     if(this.opponentLeft){
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
@@ -969,7 +994,7 @@
                                 return;
                             }
                         }
-                        this.$refs.modalResultado.gameResult( data.jogoFinalizacao).then( async(result) =>{
+                        this.$refs.modalResultado.gameResult( data.jogoFinalizacao, this.gameMode).then( async(result) =>{
                                 if(this.opponentLeft){
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     location.reload();
@@ -1315,7 +1340,58 @@
         overflow: auto;
     }
     /* Largura da barra de rolagem */
-    ::-webkit-scrollbar {
+    ::-webkit-scrollbar 
+    {
         width: 0px;
+    }
+    
+
+    /**************************** loading *************************/
+    .loading-progress{
+        z-index: 0;
+        filter: blur(5px);
+    }
+    .lds-ring 
+    {
+        display: inline-block;
+        width: 30vw;
+        height: 30vw;
+        margin-top: -32.6vw;
+        margin-left: 40vw;
+        position: absolute;
+        z-index: 9999999999;
+    }
+    .lds-ring div 
+    {
+        box-sizing: border-box;
+        display: block;
+        position: absolute;
+        width: 20vw;
+        height: 20vw;
+        margin: 8px;
+        border: 2vw solid #6e6e70;
+        border-radius: 50%;
+        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        border-color: #6e6e70 transparent transparent transparent;
+    }
+    .lds-ring div:nth-child(1) 
+    {
+        animation-delay: -0.45s;
+    }
+    .lds-ring div:nth-child(2) 
+    {
+        animation-delay: -0.3s;
+    }
+    .lds-ring div:nth-child(3) 
+    {
+        animation-delay: -0.15s;
+    }
+    @keyframes lds-ring {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
