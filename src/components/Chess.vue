@@ -369,6 +369,8 @@
                 this.$refs.modalIniciacao.show().then(async(result) =>{
                     if(result){
 
+                        this.showLoading = true;
+
                         this.isModalIniciacaoVisible = false;
 
                         if( localStorage.getItem("tipoJogo") == 2 ){
@@ -381,6 +383,8 @@
                             localStorage.clear();
 
                             this.createSocket();
+
+                            this.showLoading = false;
 
                             return;
                         }
@@ -439,6 +443,7 @@
                                 this.isModalChoosePieceVisible = false;
                                 this.showLoading = false;
                             }); 
+                            this.showLoading = false;
                             this.isModalChoosePieceVisible = true;
                         }
 
@@ -594,12 +599,14 @@
                     document.getElementById(item.casaDestino.casa).title = "Movimento"
                 }
                 this.mapJogada.set(item.casaDestino.casa, item.nome);
-                if(item.nome || item.nome != "L"){
+                if(item.nome != null ){
                     if(document.getElementById(item.casaDestino.casa).title == "Captura" && item.nome == "Promoção do Peão"){
                         document.getElementById(item.casaDestino.casa).title = document.getElementById(item.casaDestino.casa).title + " e " + item.nome;
                         return;
                     }
-                    document.getElementById(item.casaDestino.casa).title = item.nome;
+                    if(item.nome != "L"){
+                        document.getElementById(item.casaDestino.casa).title = item.nome;
+                    }
                 }
                 
             },
@@ -715,6 +722,7 @@
                             message: 'Confirma sua desistência do jogo? (essa ação fará você sair da sala)'
                         }).then(async (result) =>{
                             if(result){
+                                this.showLoading = true;
                                 this.waiver = true;
                                 http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                             }
@@ -966,6 +974,7 @@
                             if(!data.jogoFinalizacao.toString().includes(color)){
                                 this.$refs.modalResultado.gameResult('lose', this.gameMode).then( async(result) =>{
                                     if(this.opponentLeft){
+                                        this.showLoading = true;
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     }
@@ -974,6 +983,7 @@
                                         this.isModalResultadoVisible = false;
                                         this.openModal("revanche");
                                     }else{
+                                        this.showLoading = true;
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         this.waiver = true;
                                     }
@@ -983,10 +993,12 @@
                             }else{ 
                                 this.$refs.modalResultado.gameResult('win', this.gameMode).then( async() =>{
                                     if(this.opponentLeft){
+                                        this.showLoading = true;
                                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                         location.reload();
                                     }
 
+                                    this.showLoading = true;
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     this.waiver = true;
                                 })
@@ -996,6 +1008,7 @@
                         }
                         this.$refs.modalResultado.gameResult( data.jogoFinalizacao, this.gameMode).then( async(result) =>{
                                 if(this.opponentLeft){
+                                    this.showLoading = true;
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     location.reload();
                                 }
@@ -1004,6 +1017,7 @@
                                     this.isModalResultadoVisible = false;
                                     this.openModal("revanche");
                                 }else{
+                                    this.showLoading = true;
                                     http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                                     this.waiver = true;
                                 }
@@ -1024,6 +1038,7 @@
                         await this.reconnectPlayer();
                         this.resetBoard();
                     }else{
+                        this.showLoading = true;
                         http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
                         location.reload();
                     }
