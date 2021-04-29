@@ -1,50 +1,51 @@
 <template>
-<div>
-  <transition name="modal-fade" v-if="showPrincipal">
-    <div class="modal-initiation">
-      <div class="modal-initiation-container"
-        role="dialog"
-        aria-labelledby="modalTitle"
-        aria-describedby="modalDescription"
-      >
-        <div class="header">
-            <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
-                <img src="../assets/imgs/dog_chess.png">
-                <span>Bem-vindo ao Jogo de xadrez</span>
-            </div>
-        </div>
-        <div class="body">
-          <div class="show-information">
-                <div>
-                    <label>Desenvolvedores:</label>
-                    <span> Caio Wey | Igor Lisboa | Matheus Baldas | Milena Veríssimo | Victor Matheus Pereira | Victor Marques</span>
-                </div>
-            </div>
-            <div class="new-game">
-                <label>Iniciar novo jogo: </label>
-                <div>
-                    <input type="radio" id="JxJ" name="optJogos" value="0" checked> 
-                      <label for="JxJ"> JxJ </label>
-                    <input type="radio" id="JxIA" name="optJogos" value="1"> 
-                      <label for="JxIA"> JxIA </label>
-                    <input type="radio" id="IAxIA" name="optJogos" value="2"> 
-                      <label for="IAxIA"> IAxIA </label>
-                  <button @click="criarSala">INICIAR AGORA</button>
-                </div>
-            </div>
-            <div class="get-in-game">
-                <label>Entrar em um jogo:</label>
-                <div>
-                  <input placeholder="Código da sala" @keyup="keyupInput($event)" v-model="valueInput">
-                  <button :class="{'disabled': this.disabledButton}" :disabled='this.disabledButton' @click="entrarSala">ENTRAR</button>
-                </div>
-            </div>           
+  <div>
+    <transition name="modal-fade" v-if="showPrincipal">
+      <div class="modal-initiation">
+        <div class="modal-initiation-container"
+          role="dialog"
+          aria-labelledby="modalTitle"
+          aria-describedby="modalDescription"
+        >
+          <div class="header">
+              <div class="title-page" :style="{ backgroundImage: 'url(' + require('@/assets/imgs/title_page.png') + ')' }">
+                  <img src="../assets/imgs/dog_chess.png">
+                  <span>Bem-vindo ao Jogo de xadrez</span>
+              </div>
+          </div>
+          <div class="body">
+            <div class="show-information">
+                  <div>
+                      <label>Desenvolvedores:</label>
+                      <span> Caio Wey | Igor Lisboa | Matheus Baldas | Milena Veríssimo | Victor Matheus Pereira | Victor Marques</span>
+                  </div>
+              </div>
+              <div class="new-game">
+                  <label>Iniciar novo jogo: </label>
+                  <div>
+                      <input type="radio" id="JxJ" name="optJogos" value="0" checked> 
+                        <label for="JxJ"> JxJ </label>
+                      <input type="radio" id="JxIA" name="optJogos" value="1"> 
+                        <label for="JxIA"> JxIA </label>
+                      <input type="radio" id="IAxIA" name="optJogos" value="2"> 
+                        <label for="IAxIA"> IAxIA </label>
+                    <button @click="criarSala">INICIAR AGORA</button>
+                  </div>
+              </div>
+              <div class="get-in-game">
+                  <label>Entrar em um jogo:</label>
+                  <div>
+                    <input placeholder="Código da sala" @keyup="keyupInput($event)" v-model="valueInput">
+                    <button :class="{'disabled': this.disabledButton}" :disabled='this.disabledButton' @click="entrarSala">ENTRAR</button>
+                  </div>
+              </div>           
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
-  <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible"/>
-  <toast ref="toast"/>
+    </transition>
+    <modalConfirmation ref="modalConfirmation" v-show="isConfirmationVisible" :class="{'loading-progress': this.showLoading}"/>
+    <toast ref="toast"/>
+    <div class="lds-ring" v-show="this.showLoading"><div></div><div></div><div></div><div></div></div>
   </div>
 </template>
 
@@ -67,6 +68,7 @@
         isConfirmationVisible: false,           // variável que indica se o modal de confiramção deve ser visível
         isChoosePieceVisible :false,            // variável que indica se o modal de escolha de peça deve ser visiível
         gameMode: undefined,                    // variável que carrega o tipo de jogo escolhido
+        showLoading: false,                     // variável que representa se loading está em progresso
         resolvePromise: undefined,              // variável para retorno das informações do modal
         rejectPromise: undefined                // variável para retorno das informações do modal
       }
@@ -110,6 +112,8 @@
 
           if (result)                                          //caso seja confirmado criação da sala
           { 
+            this.showLoading = true;
+
             try
             {   
               await http.post("jogos", {"tipoJogo": this.gameMode})                  //acessa endpoint de criação de sala
@@ -128,10 +132,12 @@
                 type: 'error'
               });
               this.showPrincipal = true;
+              this.showLoading = false;
               this.resolvePromise(false);
             }
 
             localStorage.setItem("acao", "criacao");
+            this.showLoading = false;
             this.resolvePromise(result); 
 
           }
@@ -160,6 +166,8 @@
 
           if (result)                                                      //caso seja confirmado entrar na sala
           {
+            this.showLoading = true;
+
             try
             {
               await http.get('jogos/' + this.valueInput )                           //acessa endpoint de entrada em sala
@@ -168,21 +176,28 @@
 
                     let ladoSemJogador = this.getLadoSemJogador(response.data.data);
 
-                    if(ladoSemJogador != -1 || ladoSemJogador != null)       //verificação se pode entrar em sala
+                    console.log(ladoSemJogador)
+
+                    console.log(response.data.data);
+                    console.log(response.data.data);
+
+                    if(response.data.data.ladoBranco.tipo != null && response.data.data.ladoPreto.tipo != null)       //caso sala esteja cheia 
                     {     
-                      localStorage.setItem("idjogo", this.valueInput);  
-                      localStorage.setItem("ladoId", ladoSemJogador);
-                      localStorage.setItem("acao", "entrada");
-                    }
-                    else                                                          //caso sala esteja cheia
-                    {
                       // mostra notificação de sala cheia
                       this.$refs.toast.show({
                         message: 'Sala cheia! Não é possível ter mais jogadores',
                         type: 'error'
                       }); 
                       this.showPrincipal = true;
-                      this.resolvePromise(false); 
+                      this.showLoading = false;
+                      this.resolvePromise(false);
+                    
+                    }
+                    else                                                        //verificação se pode entrar em sala 
+                    {
+                       localStorage.setItem("idjogo", this.valueInput);  
+                      localStorage.setItem("ladoId", ladoSemJogador);
+                      localStorage.setItem("acao", "entrada");
                     }
 
                   }
@@ -193,6 +208,7 @@
                       type: 'error'
                     }); 
                     this.showPrincipal = true;
+                    this.showLoading = false;
                     this.resolvePromise(false); 
                   }
                 }            
@@ -208,6 +224,7 @@
                 type: 'error'
               }); 
               this.showPrincipal = true;
+              this.showLoading = false;
               this.resolvePromise(false); 
             }
           } 
@@ -389,5 +406,54 @@
   .disabled
   {
     opacity: .2;
+  }
+
+  /**************************** loading *************************/
+  .loading-progress{
+    z-index: 0;
+    filter: blur(5px);
+  }
+  .lds-ring 
+  {
+    display: inline-block;
+    width: 30vw;
+    height: 30vw;
+    margin-top: -32.6vw;
+    margin-left: 40vw;
+    position: absolute;
+    z-index: 9999999999;
+  }
+  .lds-ring div 
+  {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 20vw;
+    height: 20vw;
+    margin: 8px;
+    border: 2vw solid #6e6e70;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #6e6e70 transparent transparent transparent;
+  }
+  .lds-ring div:nth-child(1) 
+  {
+     animation-delay: -0.45s;
+  }
+  .lds-ring div:nth-child(2) 
+  {
+    animation-delay: -0.3s;
+  }
+  .lds-ring div:nth-child(3) 
+  {
+    animation-delay: -0.15s;
+  }
+  @keyframes lds-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
   }
 </style>

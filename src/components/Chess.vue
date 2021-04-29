@@ -261,7 +261,7 @@
             >
 
             <div class="button-area" v-if="this.idGame">
-                <button class="des" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('desistencia')">DESISTÊNCIA</button>
+                <button class="des" :class="{'disabled': !this.turn}" :disabled='!this.turn' @click="openModal('desistencia')">DESISTÊNCIA</button>
                 <button class="emp" :class="{'disabled': !this.turn || this.gameMode == 2}" :disabled='!this.turn || this.gameMode == 2' @click="openModal('empate')">COMUM ACORDO</button>
             </div>
 
@@ -725,6 +725,10 @@
                                 this.showLoading = true;
                                 this.waiver = true;
                                 http.delete("/jogos/"+this.idGame+"/jogadores/"+this.playerconf.ladoId);
+
+                                if(this.gameMode == 2){
+                                    location.reload();
+                                }
                             }
                             this.isModalConfirmationVisible=false;
                         });
