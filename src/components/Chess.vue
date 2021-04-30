@@ -1081,7 +1081,7 @@
         font-size: 2vw;
         justify-content: space-between;
         display: flex;
-        margin-left: 28.3%;
+        margin-left: 30.6%;
         position: absolute;
         color:white; 
         top: 0.5vw;
@@ -1089,12 +1089,12 @@
     .vertical-position div
     {
         float: right;
-        width: 5.42vw;
+        width: 4.85vw;
     }
     .horizontal-position
     {
         position: absolute;
-        margin-left: 26%;
+        margin-left: 28%;
         margin-top: 4vw;
         font-size: 2vw;
         text-align: center;
@@ -1102,13 +1102,13 @@
     }
     .horizontal-position div
     {
-        height: 5.5vw;
+        height: 5vw;
     }
 
     /*******************  Tabuleiro ********************/
     .container {
-        width: 43.71vw; 
-        height: 43.71vw; 
+        width: 39.5vw; 
+        height: 39.5vw; 
         margin:auto;
         margin-top: 2.8vw; 
         padding: 0.1vw 0.1vw 0.1vw 0.1vw;
@@ -1122,8 +1122,8 @@
         justify-content: center;
     }
     .row div {
-        width:5.24vw; 
-        height:5.24vw; 
+        width:4.7vw; 
+        height:4.7vw; 
         float:left; 
         margin:0.1vw; 
         font-size: 48px; 
